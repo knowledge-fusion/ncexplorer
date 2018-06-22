@@ -1,0 +1,15 @@
+{
+    "dev": {
+        "app_function": "app.serverless.app",
+        "aws_region": "ap-southeast-1", 
+        "profile_name": "knowledge-fusion",
+        "project_name": "natural-language-processing",
+        "runtime": "python2.7", 
+        "s3_bucket": "zappa-config",
+        "exclude": ["data", "*.gz", "*.rar", "*.pyc",  "node_modules", "static", "docs", "*.po",
+            "tests", "boto3*", "botocore*", "sphinx*", "pylint*", ".*"],
+        "manage_roles": true,
+        "role_name": "ZappaLambdaExecution",
+        "keep_warm": false
+    }
+}
