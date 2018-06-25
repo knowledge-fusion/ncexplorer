@@ -1,8 +1,9 @@
 #!usr/bin/env python
 # -*- coding: utf-8 -*-
 import flask_login
+from celery import Celery
 from flask import Flask, redirect, request, current_app, \
-    render_template
+    render_template, jsonify
 from flask_login import login_manager, UserMixin, LoginManager
 from raven.contrib.flask import Sentry
 from raven.handlers.logging import SentryHandler
@@ -12,8 +13,11 @@ from app.common.mongoengine_base import BaseDocument
 from app.config import DefaultConfig
 from app.extenstions import admin, db
 
+__all__ = ['create_app', 'celery']
+
 DEFAULT_BLUEPRINTS = []
 
+celery = Celery(__name__, config_source=DefaultConfig)
 
 def create_app(config=None, app_name=None, blueprints=None):
     """Create a Flask app."""
@@ -127,6 +131,22 @@ def configure_blueprints(app, blueprints):
     for blueprint in blueprints:
         app.register_blueprint(blueprint)
 
+    @app.route('/task_status/<string:task_id>/', methods=['GET'])
+    def task_status(task_id):
+        task = celery.AsyncResult(task_id)
+        response = {
+            'state': task.state,
+            'status': task.status,
+            'result': str(task.info),
+            'ready': task.ready(),
+            'successful': task.successful()
+        }
+        if task.children and task.children and isinstance(task.children[0],
+                                                          celery.GroupResult):
+            response['ready'] = task.children[0].ready()
+            response['successful'] = task.children[0].successful()
+
+        return jsonify(response)
 
 def configure_error_handlers(app):
     @app.errorhandler(Exception)

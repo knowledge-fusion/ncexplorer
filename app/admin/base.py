@@ -1,4 +1,11 @@
+from flask_admin import BaseView
 from flask_admin.contrib.mongoengine import ModelView
+
+
+class AuthView(BaseView):
+    def is_accessible(self):
+        from flask_login import current_user
+        res = current_user.is_authenticated
 
 
 class AuthModelView(ModelView):

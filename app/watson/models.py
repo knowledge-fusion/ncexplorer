@@ -120,11 +120,17 @@ class SematicRole(EmbeddedDocument):
     sentence = StringField()
 
 
+class RelationEntity(EmbeddedDocumentField):
+    name = StringField
+
+
 class Relation(EmbeddedDocument):
     type = StringField()
     sentence = StringField()
     score = FloatField()
-    arguments = DictField()
+    argument1 = DictField()
+    argument2 = DictField()
+
 
 class WatsonAnalytics(BaseDocument):
     url = URLField()

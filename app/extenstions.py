@@ -3,5 +3,7 @@
 from flask_admin import Admin
 from flask_mongoengine import MongoEngine
 
-admin = Admin(template_mode='bootstrap3')
+from app.admin.manual_cron import ManualCronView
+
+admin = Admin(index_view=ManualCronView(), template_mode='bootstrap3')
 db = MongoEngine()

@@ -4,6 +4,8 @@ mongoengine
 flask-mongoengine
 Flask-Login
 
+celery[redis,msgpack]
+
 watson-developer-cloud
 
 zappa

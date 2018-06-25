@@ -1,30 +1,23 @@
-from flask import current_app, json
+from flask import current_app
 from pymongo import UpdateOne
 from watson_developer_cloud import NaturalLanguageUnderstandingV1
 from watson_developer_cloud.natural_language_understanding_v1 import Features, EntitiesOptions, \
     KeywordsOptions, MetadataOptions, EmotionOptions, CategoriesOptions, ConceptsOptions, \
     RelationsOptions, SemanticRolesOptions, SentimentOptions, AnalysisResults
 
-from app.finance_news.models import FinanceNews
 from app.watson.models import Category, Entity, Concept, EntityScore, WatsonAnalytics, ConceptScore, \
     CategoryScore, Keyword, Author, SematicRole, Relation
 
 
-def analyze():
+def analyze(url, html):
     natural_language_understanding = NaturalLanguageUnderstandingV1(
         username=current_app.config['WATSON_USERNAME'],
         password=current_app.config['WATSON_PASSWORD'],
         version=current_app.config['WATSON_VERSION']
     )
+    query = {'html': html} if html else {'url': url}
 
-    news = FinanceNews.objects(id='5af15e508ea7681409c6fedb').first()
-
-    response = natural_language_understanding.analyze(
-        html=news.html,
-        return_analyzed_text=True,
-        clean=True,
-        limit_text_characters=10000,
-        features=Features(
+    features = Features(
             entities=EntitiesOptions(
                 emotion=True,
                 sentiment=True,
@@ -42,16 +35,24 @@ def analyze():
             semantic_roles=SemanticRolesOptions(limit=3),
             sentiment=SentimentOptions(),
         )
+
+    response = natural_language_understanding.analyze(
+        features,
+        return_analyzed_text=True,
+        clean=True,
+        limit_text_characters=10000,
+        **query
     )
-    result = AnalysisResults._from_dict(response)
+
     operations = []
     for author in response['metadata']['authors']:
         name = author['name']
         operations.append(UpdateOne({'name': name}, {'$set': {'name': name}}, upsert=True))
-    Author._get_collection().bulk_write(operations, ordered=False)
+    if operations:
+        Author._get_collection().bulk_write(operations, ordered=False)
 
     operations = []
-    for category in response['categories']:
+    for category in response.get('categories', []):
         '''
         {
             "score": 0.594296,
@@ -60,11 +61,11 @@ def analyze():
         '''
         label = category['label']
         operations.append(UpdateOne({"label": label}, {'$set': {"label": label}}, upsert=True))
-
-    res = Category._get_collection().bulk_write(operations, ordered=False)
+    if operations:
+        res = Category._get_collection().bulk_write(operations, ordered=False)
 
     operations = []
-    for entity in response['entities']:
+    for entity in response.get('entities', []):
         if not entity.get('disambiguation', None):
             continue
         updates = {
@@ -72,25 +73,27 @@ def analyze():
             'subtypes': entity['disambiguation']['subtype'],
             'name': entity['text']
         }
-        if entity['text'] == entity['disambiguation']['name']:
+        if entity['text'] == entity['disambiguation'].get('name', ''):
             updates['url'] = entity['disambiguation']['dbpedia_resource']
         operations.append(UpdateOne({'name': entity['text']}, {'$set': updates}, upsert=True))
-    res = Entity._get_collection().bulk_write(operations, ordered=False)
+    if operations:
+        res = Entity._get_collection().bulk_write(operations, ordered=False)
 
     operations = []
-    for concept in response['concepts']:
+    for concept in response.get('concepts', []):
         updates = {
             'url': concept['dbpedia_resource'],
             'text': concept['text']
         }
         operations.append(UpdateOne({'text': concept['text']}, {'$set': updates}, upsert=True))
-    res = Concept._get_collection().bulk_write(operations, ordered=False)
+    if operations:
+        res = Concept._get_collection().bulk_write(operations, ordered=False)
 
-    document = WatsonAnalytics.objects(url=news.url).first()
+    document = WatsonAnalytics.objects(url=url).first()
     if not document:
-        document = WatsonAnalytics(url=news.url)
+        document = WatsonAnalytics(url=url)
 
-    entities = [item['text'] for item in response['entities']]
+    entities = [item['text'] for item in response.get('entities', [])]
     document.entities = []
     for item in Entity.objects(name__in=entities):
         entityScore = EntityScore(
@@ -100,7 +103,7 @@ def analyze():
         )
         document.entities.append(entityScore)
 
-    concepts = [item['text'] for item in response['concepts']]
+    concepts = [item['text'] for item in response.get('concepts', [])]
     document.concepts = []
     for item in Concept.objects(text__in=concepts):
         conceptScore = ConceptScore(
@@ -123,37 +126,42 @@ def analyze():
     document.authors = Author.objects(name__in=authors).only('id')
 
     document.keywords = []
-    for item in response['keywords']:
+    for item in response.get('keywords', []):
         keyword = Keyword(
             text=item['text'],
             sentiment_score=item['sentiment']['score'],
             score=item['relevance'],
-            sadness=item['emotion']['sadness'],
-            joy=item['emotion']['joy'],
-            fear=item['emotion']['fear'],
-            disgust=item['emotion']['disgust'],
-            anger=item['emotion']['anger']
         )
+        if item.get('emotion', None):
+            keyword.sadness = item['emotion']['sadness']
+            keyword.joy = item['emotion']['joy']
+            keyword.fear = item['emotion']['fear']
+            keyword.disgust = item['emotion']['disgust']
+            keyword.anger = item['emotion']['anger']
         document.keywords.append(keyword)
 
     document.semantic_roles = []
-    for item in response['semantic_roles']:
+    for item in response.get('semantic_roles',[]):
         sematicRole = SematicRole(
             action=item['action'],
-            object=item['object'],
+            object=item.get('object'),
             subject=item['subject'],
             sentence=item['sentence']
         )
         document.semantic_roles.append(sematicRole)
 
     document.relations = []
-    for item in response['relations']:
+    for item in response.get('relations', []):
         relation = Relation(
             type=item['type'],
             score=item['score'],
             sentence=item['sentence'],
-            arguments=item['arguments']
         )
+        if item['arguments']:
+            relation.arguments1 = item['arguments'][0]
+        if len(item['arguments']) > 1:
+            relation.arguments2 = item['arguments'][1]
+
         document.relations.append(relation)
 
     emotion = response['emotion']['document']['emotion']
@@ -168,6 +176,8 @@ def analyze():
     document.publication_date = response['metadata']['publication_date']
 
     document.save()
+
+    return True
 
 
 def find_attribute(lst, key, value, attribute_key):
