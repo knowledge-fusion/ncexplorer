@@ -14,25 +14,13 @@ from mongoengine import DateTimeField, Document, StringField
 # http://docs.mongoengine.org/guide/querying.html#custom-querysets
 
 
-class UpdateTimestampQuerySet(BaseQuerySet):
-    def upsert_one(self, write_concern=None, **update):
-        update_time = datetime.utcnow()
-        update['set__updated_at'] = update_time
-        result = super(UpdateTimestampQuerySet, self).upsert_one(write_concern, **update)
-        if result.created_at is None:
-            result.created_at = update_time
-            result.save()
-        return result
-
-
 class BaseDocument(Document):
     meta = {
         'abstract': True,
-        'queryset_class': UpdateTimestampQuerySet
     }
 
-    created_at = DateTimeField(required=True)
-    updated_at = DateTimeField(required=True)
+    created_at = DateTimeField(required=True, default=lambda: datetime.utcnow())
+    updated_at = DateTimeField(required=True, default=lambda: datetime.utcnow())
 
     def validate(self, clean=True):
         if not self.created_at:

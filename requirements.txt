@@ -2,7 +2,7 @@ flask
 Flask-Admin
 mongoengine
 flask-mongoengine
-
+Flask-Login
 
 watson-developer-cloud
 

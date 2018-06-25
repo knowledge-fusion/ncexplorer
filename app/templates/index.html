@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Welcome to Knowledge Fusion</h3>
+<form method='POST' class="uk-form-horizontal uk-margin-large">
+    <div class="uk-margin">
+
+        <label class="uk-form-label" for="form-horizontal-text">Username</label>
+        <div class="uk-form-controls">
+
+            <input class='uk-input' type='text' name='username'></input>
+        </div>
+    </div>
+    <div class="uk-margin">
+
+        <label class="uk-form-label" for="form-horizontal-text">Password</label>
+        <div class="uk-form-controls">
+
+            <input class='uk-input' type='password' name='pw'></input>
+        </div>
+    </div>
+    <div class="uk-margin">
+
+        <input class="uk-button uk-button-primary" type='submit' name='submit'></input>
+    </div>
+</form>
+{% endblock %}

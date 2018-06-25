@@ -1,13 +1,12 @@
 #!usr/bin/env python
 # -*- coding: utf-8 -*-
-from flask import Flask, g, redirect, request, flash, current_app, \
-    url_for, render_template
-from flask import make_response
+import flask_login
+from flask import Flask, redirect, request, current_app, \
+    render_template
+from flask_login import login_manager, UserMixin, LoginManager
 from raven.contrib.flask import Sentry
 from raven.handlers.logging import SentryHandler
 from werkzeug.contrib.fixers import ProxyFix
-
-
 
 from app.common.mongoengine_base import BaseDocument
 from app.config import DefaultConfig
@@ -44,6 +43,7 @@ def configure_logging(app):
         app.logger.addHandler(handler)
 
 
+
 def configure_app(app, config=None):
     """Different ways of configurations."""
 
@@ -71,6 +71,51 @@ def configure_extensions(app):
             else:
                 raise
 
+    login_manager = LoginManager()
+    login_manager.init_app(app)
+
+    class User(UserMixin):
+        pass
+
+    @login_manager.user_loader
+    def user_loader(username):
+        if username != current_app.config['ADMIN_USERNAME']:
+            return None
+        user = User()
+        user.id = username
+        return user
+
+    @login_manager.request_loader
+    def request_loader(req):
+        username = req.form.get('username')
+        if username != current_app.config['ADMIN_USERNAME']:
+            return None
+
+        user = User()
+        user.id = username
+
+        return user
+
+    login_manager.login_view = "index"
+
+    @app.route('/', methods=['GET', 'POST'])
+    def index():
+
+        if request.method == 'POST':
+            username = request.form.get('username')
+            if request.form.get('pw') == current_app.config['ADMIN_PASSWORD']:
+                user = User()
+                user.id = username
+                flask_login.login_user(user)
+                redirect_url = request.args.get('next') or '/admin/'
+                return redirect(redirect_url)
+        return render_template('index.html')
+
+    @app.route('/logout')
+    def logout():
+        flask_login.logout_user()
+        return redirect('/')
+
 
 def configure_signals(app):
     pass
@@ -82,9 +127,6 @@ def configure_blueprints(app, blueprints):
     for blueprint in blueprints:
         app.register_blueprint(blueprint)
 
-    @app.route('/')
-    def index():
-        return "hello world", 200
 
 def configure_error_handlers(app):
     @app.errorhandler(Exception)

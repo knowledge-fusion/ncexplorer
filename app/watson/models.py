@@ -1,7 +1,15 @@
 from mongoengine import URLField, EmbeddedDocumentListField, EmbeddedDocument, FloatField, \
-    StringField, ListField, EmbeddedDocumentField, ReferenceField, IntField, DictField
+    StringField, ListField, EmbeddedDocumentField, ReferenceField, IntField, DictField, \
+    DateTimeField
 
 from app.common.mongoengine_base import BaseDocument
+
+
+class Author(BaseDocument):
+    name = StringField(required=True, unique=True)
+
+    def __unicode__(self):
+        return self.name
 
 
 class Category(BaseDocument):
@@ -27,8 +35,11 @@ class Concept(BaseDocument):
       "dbpedia_resource": "http://dbpedia.org/resource/Lotus_Software"
     }
     '''
-    text = StringField(required=True)
+    text = StringField(required=True, unique=True)
     url = URLField()
+
+    def __unicode__(self):
+        return self.text
 
 
 class ConceptScore(EmbeddedDocument):
@@ -60,10 +71,13 @@ class Entity(BaseDocument):
     }
     '''
     type = StringField(required=True)
-    name = StringField(required=True)
+    name = StringField(required=True, unique=True)
     url = URLField()
     extra_data = DictField()
     subtypes = ListField(StringField())
+
+    def __unicode__(self):
+        return self.name
 
 
 class EntityScore(EmbeddedDocument):
@@ -72,7 +86,7 @@ class EntityScore(EmbeddedDocument):
     entity = ReferenceField(Entity, required=True)
 
 
-class Keyword(BaseDocument):
+class Keyword(EmbeddedDocument):
     '''
       {
       "text": "curated online courses",
@@ -89,17 +103,44 @@ class Keyword(BaseDocument):
       }
     }
     '''
-    pass
+    text = StringField()
+    sentiment_score = FloatField()
+    score = FloatField()
+    sadness = FloatField()
+    joy = FloatField()
+    fear = FloatField()
+    disgust = FloatField()
+    anger = FloatField()
+
+
+class SematicRole(EmbeddedDocument):
+    action = DictField()
+    subject = DictField()
+    object = DictField()
+    sentence = StringField()
+
+
+class Relation(EmbeddedDocument):
+    type = StringField()
+    sentence = StringField()
+    score = FloatField()
+    arguments = DictField()
 
 class WatsonAnalytics(BaseDocument):
     url = URLField()
     categories = ListField(EmbeddedDocumentField(CategoryScore))
     entities = ListField(EmbeddedDocumentField(EntityScore))
     concepts = ListField(EmbeddedDocumentField(ConceptScore))
-    keywords = DictField()
+    keywords = ListField(EmbeddedDocumentField(Keyword))
+    authors = ListField(ReferenceField(Author))
+    semantic_roles = ListField(EmbeddedDocumentField(SematicRole))
+    relations = ListField(EmbeddedDocumentField(Relation))
     sadness = FloatField()
     joy = FloatField()
     fear = FloatField()
     disgust = FloatField()
     anger = FloatField()
     sentiment_score = FloatField()
+    publication_date = DateTimeField()
+    title = StringField()
+    analyzed_text = StringField()

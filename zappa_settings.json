@@ -6,7 +6,7 @@
         "project_name": "natural-language-processing",
         "runtime": "python2.7", 
         "s3_bucket": "zappa-config",
-        "exclude": ["data", "*.gz", "*.rar", "*.pyc",  "node_modules", "static", "docs", "*.po",
+        "exclude": ["data", "*.gz", "*.rar", "*.pyc",  "node_modules", "docs", "*.po",
             "tests", "boto3*", "botocore*", "sphinx*", "pylint*", ".*"],
         "manage_roles": true,
         "role_name": "ZappaLambdaExecution",

@@ -1,17 +1,13 @@
-from flask_admin.contrib.mongoengine import ModelView
-
+from app.admin.base import AuthModelView
 from app.finance_news.admin import FinanceNewsView
 from app.finance_news.models import FinanceNews
-from app.watson.models import WatsonAnalytics, Category, Entity, Concept
+from app.watson.admin import WatsonAnalyticsView
+from app.watson.models import WatsonAnalytics, Category, Entity, Concept, Keyword, Author
 
 
 def add_admin_views(admin):
     admin.add_view(FinanceNewsView(FinanceNews))
 
-    admin.add_view(ModelView(Category))
-    admin.add_view(ModelView(Entity))
-    admin.add_view(ModelView(
-        Concept
-    ))
-
-    admin.add_view(ModelView(WatsonAnalytics))
+    admin.add_view(WatsonAnalyticsView(WatsonAnalytics))
+    for model in [Category, Entity, Author, Concept]:
+        admin.add_view(AuthModelView(model))
