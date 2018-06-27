@@ -7,7 +7,7 @@ from app.watson.models import WatsonAnalytics, Category, Entity, Concept, Keywor
 
 
 def add_admin_views(admin):
-    admin.add_view(FinanceNewsView(FinanceNews))
+    #admin.add_view(FinanceNewsView(FinanceNews))
 
     admin.add_view(WatsonAnalyticsView(WatsonAnalytics))
     for model in [Category, Entity, Author, Concept]:

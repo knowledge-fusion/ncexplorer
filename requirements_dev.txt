@@ -1,0 +1,9 @@
+-r requirements.txt
+
+zappa
+
+#test
+pytest
+pylint
+pylint_flask
+responses

@@ -3,21 +3,23 @@
 import flask_login
 from celery import Celery
 from flask import Flask, redirect, request, current_app, \
-    render_template, jsonify
-from flask_login import login_manager, UserMixin, LoginManager
+    jsonify, make_response
+from flask_login import UserMixin, LoginManager
 from raven.contrib.flask import Sentry
 from raven.handlers.logging import SentryHandler
 from werkzeug.contrib.fixers import ProxyFix
 
 from app.common.mongoengine_base import BaseDocument
 from app.config import DefaultConfig
-from app.extenstions import admin, db
+from app.extenstions import admin, db, cache
+from app.utils import render
 
 __all__ = ['create_app', 'celery']
 
 DEFAULT_BLUEPRINTS = []
 
 celery = Celery(__name__, config_source=DefaultConfig)
+
 
 def create_app(config=None, app_name=None, blueprints=None):
     """Create a Flask app."""
@@ -47,7 +49,6 @@ def configure_logging(app):
         app.logger.addHandler(handler)
 
 
-
 def configure_app(app, config=None):
     """Different ways of configurations."""
 
@@ -62,6 +63,9 @@ def configure_extensions(app):
     # flask-mongoengine
     db.init_app(app)
     db.Document = BaseDocument
+
+    # cache
+    cache.init_app(app)
 
     # admin
     if app.config['ENABLE_ADMIN_VIEW']:
@@ -113,7 +117,7 @@ def configure_extensions(app):
                 flask_login.login_user(user)
                 redirect_url = request.args.get('next') or '/admin/'
                 return redirect(redirect_url)
-        return render_template('index.html')
+        return render('index.html')
 
     @app.route('/logout')
     def logout():
@@ -130,6 +134,12 @@ def configure_blueprints(app, blueprints):
 
     for blueprint in blueprints:
         app.register_blueprint(blueprint)
+
+    @app.route('/reset_cache')
+    def reset_cache():
+        from app.utils import get_remote_template
+        cache.delete_memoized(get_remote_template)
+        return make_response("OK", 200)
 
     @app.route('/task_status/<string:task_id>/', methods=['GET'])
     def task_status(task_id):
@@ -148,6 +158,7 @@ def configure_blueprints(app, blueprints):
 
         return jsonify(response)
 
+
 def configure_error_handlers(app):
     @app.errorhandler(Exception)
     def handle_error(error):
@@ -160,12 +171,13 @@ def configure_error_handlers(app):
 
     @app.errorhandler(404)
     def page_not_found(error):
-        return render_template('404.html'), 404
+        return render('404.html'), 404
 
     @app.errorhandler(500)
     def server_error_page(error):
         current_app.logger.exception(error)
         return redirect('/')
+
 
 if __name__ == '__main__':
     application = create_app()

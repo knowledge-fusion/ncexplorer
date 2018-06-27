@@ -1,8 +1,9 @@
 import os
 
-from flask import current_app
+from flask import current_app, render_template_string, render_template
 
 from app.config import DefaultConfig
+from app.extenstions import cache
 
 
 def get_config(key):
@@ -13,6 +14,28 @@ def get_config(key):
         result = getattr(DefaultConfig, key)
     return result
 
+
+@cache.memoize(timeout=None)
+def get_remote_template(url):
+    import requests
+    try:
+        resp = requests.get(url)
+        return resp.text if resp.status_code == 200 else None
+    except Exception as e:
+        return None
+
+
+def render(source, **context):
+    remote_base_url = current_app.config.get("REMOTE_TEMPLATE_BASE_URL", None)
+    template_string = None
+    if remote_base_url:
+        template_string = get_remote_template(remote_base_url + source)
+
+    if template_string:
+        response = render_template_string(template_string, **context)
+    else:
+        response = render_template(source, **context)
+    return response
 
 
 def cache_api_response(backend, end_point, content):

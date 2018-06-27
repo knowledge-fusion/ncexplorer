@@ -25,3 +25,8 @@ config: clean
 
 release:
 	zappa update dev
+	curl https://finance-news.knowledge-fusion.science/reset_cache
+
+build:
+	docker build -t knowledgefusion1/nlp:master .
+	docker push knowledgefusion1/nlp:master

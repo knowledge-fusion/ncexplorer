@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import datetime
+from time import sleep
 
 from celery import chord
 from celery import group
@@ -47,6 +48,8 @@ def watson_analytics(self):
     for item in FinanceNews.objects(url__nin=existing_urls).only('url', 'html').limit(30):
         tasks.append(watson_analyze_webpage.s(item.url, item.html))
     return group(tasks)()
+
+
 
 
 ###

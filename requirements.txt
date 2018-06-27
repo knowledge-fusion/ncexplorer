@@ -1,5 +1,6 @@
 flask
 Flask-Admin
+Flask-Script
 mongoengine
 flask-mongoengine
 Flask-Login
@@ -8,13 +9,8 @@ celery[redis,msgpack]
 
 watson-developer-cloud
 
-zappa
+Flask-S3
+Flask-Caching
 
 raven[flask]
 python-dotenv
-
-#test
-pytest
-pylint
-pylint_flask
-responses

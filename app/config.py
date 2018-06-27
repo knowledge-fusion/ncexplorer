@@ -7,15 +7,14 @@ import logging
 load_dotenv(find_dotenv())
 
 
-
 class CeleryConfig(object):
     # celery config, user lower case for celery >= 4.0
     # Note, lower case config is not registered with flask.config object
     # manual configuration is expected
     # http://docs.celeryproject.org/en/latest/userguide/configuration.html#configuration
     # http://flask.pocoo.org/docs/0.12/config/
-    broker_url = (os.getenv('CELERY_BROKER_URL') or 'redis://localhost')
-    result_backend = (os.getenv('CELERY_BROKER_URL') or 'redis://localhost')
+    broker_url = (os.getenv('CELERY_BROKER_URL') or os.getenv('REDIS_PORT_6379_TCP_ADDR') or 'redis://localhost')
+    result_backend = (os.getenv('CELERY_BROKER_URL') or os.getenv('REDIS_PORT_6379_TCP_ADDR') or 'redis://localhost')
     enable_utc = True
     worker_hijack_root_logger = False
     worker_log_color = False
@@ -23,11 +22,12 @@ class CeleryConfig(object):
     beat_schedule = {
         'fitbit-sync': {
             'task': 'tasks.watson_analytics',
-            'schedule': timedelta(minutes=5),
+            'schedule': timedelta(minutes=1),
         }
     }
 
     CELERY_GEVENT_POOL_SIZE = 20
+
 
 class DefaultConfig(CeleryConfig):
     DEBUG = True
@@ -38,14 +38,25 @@ class DefaultConfig(CeleryConfig):
     SENTRY_LOG_LEVEL = logging.ERROR
     SECRET_KEY = os.getenv('SECRET_KEY')
 
-    #LOGIN
+    # LOGIN
     ADMIN_USERNAME = os.getenv('ADMIN_USERNAME')
     ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD')
 
     # WATSON
-    WATSON_VERSION = '2018-03-16'
+    WATSON_VERSION = os.getenv('WATSON_VERSION')
     WATSON_USERNAME = os.getenv('WATSON_USERNAME')
     WATSON_PASSWORD = os.getenv('WATSON_PASSWORD')
+
+    # flask-s3
+    FLASKS3_BUCKET_NAME = 'natual-language-processing-static-assets'
+    FLASKS3_FORCE_MIMETYPE = True
+    FLASKS3_ONLY_MODIFIED = True
+    REMOTE_TEMPLATE_BASE_URL = 'https://s3-ap-southeast-1.amazonaws.com/natual-language' \
+                               '-processing-static-assets/templates/'
+
+
+class ManageConfig(DefaultConfig):
+    ENABLE_ADMIN_VIEW = True
 
 
 class TestConfig(DefaultConfig):
