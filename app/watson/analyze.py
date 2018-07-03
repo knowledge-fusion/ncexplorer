@@ -1,3 +1,5 @@
+import os
+
 from flask import current_app
 from pymongo import UpdateOne
 from watson_developer_cloud import NaturalLanguageUnderstandingV1
@@ -9,11 +11,11 @@ from app.watson.models import Category, Entity, Concept, EntityScore, WatsonAnal
     CategoryScore, Keyword, Author, SematicRole, Relation
 
 
-def analyze(url, html):
+def analyze(username, password, url, html):
     natural_language_understanding = NaturalLanguageUnderstandingV1(
-        username=current_app.config['WATSON_USERNAME'],
-        password=current_app.config['WATSON_PASSWORD'],
-        version=current_app.config['WATSON_VERSION']
+        username=username,
+        password=password,
+        version=os.getenv('WATSON_VERSION')
     )
     query = {'html': html} if html else {'url': url}
 

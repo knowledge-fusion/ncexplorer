@@ -43,6 +43,7 @@ def cache_api_response(backend, end_point, content):
         import responses
         mock_disabled = hasattr(responses.mock, '_patcher') \
                         and len(responses.mock._patcher._active_patches)
+        mock_disabled = True
 
         if mock_disabled:
             basepath = os.path.dirname(__file__)

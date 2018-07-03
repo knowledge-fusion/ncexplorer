@@ -20,13 +20,18 @@ class CeleryConfig(object):
     worker_log_color = False
     task_ignore_result = False
     beat_schedule = {
-        'fitbit-sync': {
+        'watson_analytics': {
             'task': 'tasks.watson_analytics',
             'schedule': timedelta(minutes=1),
+        },
+        'stock_daily_timeseries': {
+            'task': 'tasks.stock_daily_timeseries_data',
+            'schedule': timedelta(minutes=1)
         }
     }
 
     CELERY_GEVENT_POOL_SIZE = 20
+    #redis_max_connections = 5
 
 
 class DefaultConfig(CeleryConfig):
@@ -44,8 +49,6 @@ class DefaultConfig(CeleryConfig):
 
     # WATSON
     WATSON_VERSION = os.getenv('WATSON_VERSION')
-    WATSON_USERNAME = os.getenv('WATSON_USERNAME')
-    WATSON_PASSWORD = os.getenv('WATSON_PASSWORD')
 
     # flask-s3
     FLASKS3_BUCKET_NAME = 'natual-language-processing-static-assets'
@@ -61,3 +64,5 @@ class ManageConfig(DefaultConfig):
 
 class TestConfig(DefaultConfig):
     TESTING = True
+    CACHE_API_RESPONSE = True
+    API_RESPONSE_CACHE_DIR = '../tests/finance_news/data/%s/%s'

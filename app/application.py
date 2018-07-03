@@ -119,6 +119,10 @@ def configure_extensions(app):
                 return redirect(redirect_url)
         return render('index.html')
 
+    @app.route('/admin')
+    def admin_redirect():
+        return redirect('/admin/')
+
     @app.route('/logout')
     def logout():
         flask_login.logout_user()

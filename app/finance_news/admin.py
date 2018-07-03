@@ -4,7 +4,7 @@ from flask_admin.contrib.mongoengine import ModelView
 from flask_admin.contrib.mongoengine.filters import BaseMongoEngineFilter
 from flask_admin.contrib.mongoengine.tools import parse_like_term
 
-from app.finance_news.models import FinanceNews
+from app.finance_news.models import FinanceNews, Stock
 
 
 class FinanceSymbolFilter(BaseMongoEngineFilter):
@@ -34,7 +34,7 @@ class FinanceSymbolFilter(BaseMongoEngineFilter):
 
 
 def symbol_filter(filter_column):
-    results = FinanceNews.objects().distinct(field="symbol")
+    results = Stock.objects.distinct("symbol")
     options = [(item, item) for item in results]
     return FinanceSymbolFilter(filter_column, 'Symbol', options=options)
 
