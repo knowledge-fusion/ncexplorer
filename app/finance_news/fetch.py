@@ -13,6 +13,7 @@ def fetch_symbol(provider, publisher):
     results = query_news_update(publisher=status.publisher, date=status.timestamp)
     operations = []
     for result in results:
+        result['source'] = provider
         operations.append(UpdateOne({'url': result['url']}, {'$set': result},
                                     upsert=True))
         status.timestamp = datetime.fromtimestamp(result['timestamp'])

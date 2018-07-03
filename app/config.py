@@ -27,6 +27,10 @@ class CeleryConfig(object):
         'stock_daily_timeseries': {
             'task': 'tasks.stock_daily_timeseries_data',
             'schedule': timedelta(minutes=1)
+        },
+        'newsriver_fetch_update': {
+            'task': 'tasks.fetch_newsriver_update',
+            'schedule': timedelta(minutes=16)
         }
     }
 

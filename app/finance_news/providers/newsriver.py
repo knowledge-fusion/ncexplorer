@@ -97,11 +97,11 @@ def query_news_update(publisher, date):
     url += "?query=" + urllib.urlencode(params)
     headers = {
         "Authorization": os.getenv('NEWS_RIVER0')}
-    response = requests.get(
-        url,
-        headers=headers)
-    data = response.json()
+    response = requests.get(url, headers=headers)
     results = []
+    if len(response.content) == 0:
+        return results
+    data = response.json()
     for item in data:
         date = item.get('publishDate', item['discoverDate'])
         timestamp = calendar.timegm(parser.parse(date).timetuple())

@@ -51,7 +51,8 @@ def watson_analytics(self):
     for i in xrange(3, 11):
         credentials.append((os.getenv('WATSON_USERNAME%s' % i), os.getenv('WATSON_PASSWORD%s' % i)))
     tasks = []
-    queryset = FinanceNews.objects(url__nin=existing_urls).only('url', 'html').limit(30 * len(
+    queryset = FinanceNews.objects(url__nin=existing_urls, html__ne=None).only('url', 'html').limit(
+        30 * len(
         credentials))
     for idx, item in enumerate(queryset):
         username, password = credentials[idx % len(credentials)]

@@ -15,9 +15,11 @@ class FinanceNews(BaseDocument):
     meta = {
         'collection': 'news',
         'indexes': [
-            {'fields': ['timestamp']}
+            {'fields': ['timestamp']},
+            {'fields': ['source']}
         ]
     }
+    source = StringField(choices=['crawler', 'newsriver'])
     symbol = StringField()
     url = URLField(required=True, unique=True)
     title = StringField()

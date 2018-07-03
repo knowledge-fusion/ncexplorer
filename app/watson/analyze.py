@@ -47,7 +47,7 @@ def analyze(username, password, url, html):
     )
 
     operations = []
-    for author in response['metadata']['authors']:
+    for author in response.get('metadata', {}).get('authors', []):
         name = author['name']
         operations.append(UpdateOne({'name': name}, {'$set': {'name': name}}, upsert=True))
     if operations:

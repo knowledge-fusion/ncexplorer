@@ -108,6 +108,9 @@ def configure_extensions(app):
 
     @app.route('/', methods=['GET', 'POST'])
     def index():
+        from flask_login import current_user
+        if current_user.is_authenticated:
+            return redirect('/admin/')
 
         if request.method == 'POST':
             username = request.form.get('username')
