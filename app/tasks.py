@@ -76,12 +76,15 @@ def stock_daily_timeseries_data(self):
 
 
 @celery.task(bind=True, name="tasks.fetch_newsriver_update")
-def newsriver_update(self):
+def fetch_newsriver_update(self):
     from app.finance_news.fetch import fetch_symbol
     has_more = True
-    num_query = 0
-    while has_more and num_query <= 15:
-        has_more = fetch_symbol(publisher='seekingalpha.com', provider='newsriver')
+    for i in xrange(0, 6):
+        if not has_more:
+            break
+        num_query = 0
+        while has_more and num_query <= 15:
+            has_more = fetch_symbol(publisher='seekingalpha.com', provider='newsriver', token=os.getenv('NEWS_RIVER%s' % i))
     return True
 
 

@@ -6,11 +6,16 @@ from app.finance_news.models import FinanceNews, SyncStatus
 from app.finance_news.providers.newsriver import query_news_update
 
 
-def fetch_symbol(provider, publisher):
+def fetch_symbol(provider, publisher, token):
     status = SyncStatus.objects(provider=provider, publisher=publisher).first()
     if not status.timestamp:
-        status.timestamp = datetime.fromtimestamp(1511675881)
-    results = query_news_update(publisher=status.publisher, date=status.timestamp)
+        status.timestamp = datetime.fromtimestamp(946684800)
+
+    delta = datetime.utcnow() - status.timestamp
+    if delta.days <= 1:
+        return []
+
+    results = query_news_update(publisher=status.publisher, date=status.timestamp, token=token)
     operations = []
     for result in results:
         result['source'] = provider

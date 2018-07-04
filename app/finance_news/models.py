@@ -23,14 +23,14 @@ class FinanceNews(BaseDocument):
     symbol = StringField()
     url = URLField(required=True, unique=True)
     title = StringField()
-    timestamp = LongField()
+    timestamp = IntField()
     content = StringField()
     html = StringField()
     comments_num = IntField()
 
 
 class SyncStatus(BaseDocument):
-    publisher = StringField(choices=['seekingalpha.com'])
+    publisher = StringField(choices=['seekingalpha.com', 'ft.com'])
     provider = StringField(choices=['newsriver'])
     timestamp = DateTimeField()
     last_sync_operation = DateTimeField()

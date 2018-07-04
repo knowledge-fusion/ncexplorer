@@ -124,7 +124,7 @@ def analyze(username, password, url, html):
         )
         document.categories.append(categoryScore)
 
-    authors = [item['name'] for item in response['metadata']['authors']]
+    authors = [item['name'] for item in response.get('metadata', {}).get('authors',[])]
     document.authors = Author.objects(name__in=authors).only('id')
 
     document.keywords = []
@@ -173,9 +173,9 @@ def analyze(username, password, url, html):
     document.disgust = emotion['disgust']
     document.anger = emotion['anger']
     document.sentiment_score = response['sentiment']['document']['score']
-    document.title = response['metadata']['title']
+    document.title = response.get('metadata', {}).get('title')
     document.analyzed_text = response['analyzed_text']
-    document.publication_date = response['metadata']['publication_date']
+    document.publication_date = response.get('metadata', {}).get('publication_date')
 
     document.save()
 

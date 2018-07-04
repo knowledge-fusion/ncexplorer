@@ -9,6 +9,7 @@ celery[redis,msgpack]
 
 watson-developer-cloud
 alpha_vantage
+newsapi-python
 
 Flask-S3
 Flask-Caching

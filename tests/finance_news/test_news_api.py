@@ -1,3 +1,5 @@
+import os
+
 import responses
 from mongoengine import Q
 
@@ -8,5 +10,7 @@ from app.finance_news.providers.newsriver import init
 
 def test_query_news(mock_news_api):
     #responses.start()
-    fetch_symbol(publisher='seekingalpha.com', provider='newsriver')
+    results = fetch_symbol(publisher='ft.com', provider='newsriver', token=os.getenv(
+        'NEWS_RIVER0'))
+    pass
     #responses.stop()

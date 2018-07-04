@@ -41,7 +41,7 @@ def symbol_filter(filter_column):
 
 class FinanceNewsView(ModelView):
     column_display_pk = False
-    column_list = ('symbol', 'title', 'timestamp')
+    column_list = ('symbol', 'title', 'timestamp', 'source')
 
     column_searchable_list = ['symbol', 'title']
     column_filters = (

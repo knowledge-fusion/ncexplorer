@@ -7,6 +7,7 @@ from datetime import datetime
 
 import requests
 from dateutil import parser
+from flask import current_app
 from pymongo import UpdateOne
 
 from app.finance_news.models import Stock, SyncStatus
@@ -36,7 +37,7 @@ def init():
 
 
 
-def query_news_update(publisher, date):
+def query_news_update(publisher, date, token):
     """
     [
   {
@@ -96,22 +97,22 @@ def query_news_update(publisher, date):
     url = "https://api.newsriver.io/v2/search"
     url += "?query=" + urllib.urlencode(params)
     headers = {
-        "Authorization": os.getenv('NEWS_RIVER0')}
+        "Authorization": token}
     response = requests.get(url, headers=headers)
     results = []
-    if len(response.content) == 0:
-        return results
-    data = response.json()
-    for item in data:
-        date = item.get('publishDate', item['discoverDate'])
-        timestamp = calendar.timegm(parser.parse(date).timetuple())
-        result = {
-            'url': item['url'],
-            'content': item['text'],
-            'html': item['structuredText'],
-            'timestamp': int(timestamp),
-            'title': item['title']
-        }
-        results.append(result)
-
+    try:
+        data = response.json()
+        for item in data:
+            date = item.get('publishDate', item['discoverDate'])
+            timestamp = calendar.timegm(parser.parse(date).timetuple())
+            result = {
+                'url': item['url'],
+                'content': item['text'],
+                'html': item['structuredText'],
+                'timestamp': int(timestamp),
+                'title': item['title']
+            }
+            results.append(result)
+    except Exception as e:
+        print response.content
     return results
