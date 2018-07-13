@@ -1,19 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import datetime
 import os
-from time import sleep
 
-from celery import chord
 from celery import group
-from flask import current_app
 
 from app.application import celery
-
 # pylint: disable=invalid-name,unused-argument
-from app.finance_news.models import FinanceNews, Stock
-from app.stock.fetch import fetch_daily_stock_data
-from app.stock.models import StockDailyTimeSeries
+from app.finance_news.models import FinanceNews, SyncStatus
+from app.timeseries.fetch import fetch_daily_stock_data
+from app.utils import chunks
 from app.watson.models import WatsonAnalytics
 
 logger = celery.log.get_default_logger()
@@ -48,12 +43,12 @@ def watson_analyze_webpage(self, username, password, url, html):
 def watson_analytics(self):
     existing_urls = WatsonAnalytics.objects.distinct('url')
     credentials = []
-    for i in xrange(3, 11):
+    for i in xrange(1, 11):
         credentials.append((os.getenv('WATSON_USERNAME%s' % i), os.getenv('WATSON_PASSWORD%s' % i)))
     tasks = []
     queryset = FinanceNews.objects(url__nin=existing_urls, html__ne=None).only('url', 'html').limit(
         30 * len(
-        credentials))
+            credentials))
     for idx, item in enumerate(queryset):
         username, password = credentials[idx % len(credentials)]
         tasks.append(watson_analyze_webpage.s(username, password, item.url, item.html))
@@ -61,17 +56,26 @@ def watson_analytics(self):
 
 
 @celery.task(bind=True, name='tasks.stock_daily_timeseries_data_fetch_symbol')
-def stock_daily_timeseries_data_fetch_symbol(self, symbol):
-    return fetch_daily_stock_data(symbol, 'full')
+def stock_daily_timeseries_data_fetch_symbol(self, symbols):
+    for symbol in symbols:
+        status = SyncStatus.objects(symbol=symbol, provider='alphavantage').first()
+        try:
+            res = fetch_daily_stock_data(symbol, 'full')
+        except Exception as e:
+            print "error with symbol %s" % symbol
+        status.has_more = False
+        status.save()
+    return True
 
 
 @celery.task(bind=True, name="tasks.stock_daily_timeseries_data")
 def stock_daily_timeseries_data(self):
-    symbols = StockDailyTimeSeries.objects.distinct('symbol')
-    queryset = Stock.objects(symbol__nin=symbols).only('symbol')
+    queryset = SyncStatus.objects(has_more=True, provider='alphavantage').distinct('symbol')
     tasks = []
-    for item in queryset:
-        tasks.append(stock_daily_timeseries_data_fetch_symbol.s(item.symbol))
+    for symbols in list(chunks(queryset, 10)):
+        if len(tasks) > 10:
+            break
+        tasks.append(stock_daily_timeseries_data_fetch_symbol.s(symbols))
     return group(tasks)()
 
 
@@ -84,9 +88,14 @@ def fetch_newsriver_update(self):
             break
         num_query = 0
         while has_more and num_query <= 15:
-            has_more = fetch_symbol(publisher='seekingalpha.com', provider='newsriver', token=os.getenv('NEWS_RIVER%s' % i))
+            has_more = fetch_symbol(publisher='seekingalpha.com', provider='newsriver',
+                                    token=os.getenv('NEWS_RIVER%s' % i))
     return True
 
+
+@celery.task(bind=True, name="tasks.intrinio_company_news")
+def intrinio_company_news():
+    pass
 
 
 ###

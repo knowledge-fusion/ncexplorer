@@ -8,8 +8,11 @@ Flask-Login
 celery[redis,msgpack]
 
 watson-developer-cloud
+
+#finance data provider
 alpha_vantage
 newsapi-python
+intrinio
 
 Flask-S3
 Flask-Caching

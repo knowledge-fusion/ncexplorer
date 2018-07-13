@@ -7,6 +7,7 @@ from watson_developer_cloud.natural_language_understanding_v1 import Features, E
     KeywordsOptions, MetadataOptions, EmotionOptions, CategoriesOptions, ConceptsOptions, \
     RelationsOptions, SemanticRolesOptions, SentimentOptions, AnalysisResults
 
+from app.utils import graceful_auto_reconnect
 from app.watson.models import Category, Entity, Concept, EntityScore, WatsonAnalytics, ConceptScore, \
     CategoryScore, Keyword, Author, SematicRole, Relation
 
@@ -20,23 +21,23 @@ def analyze(username, password, url, html):
     query = {'html': html} if html else {'url': url}
 
     features = Features(
-            entities=EntitiesOptions(
-                emotion=True,
-                sentiment=True,
-                limit=5),
-            keywords=KeywordsOptions(
-                emotion=True,
-                sentiment=True,
-                limit=5),
-            metadata=MetadataOptions(),
-            emotion=EmotionOptions(),
-            categories=CategoriesOptions(),
-            concepts=ConceptsOptions(
-                limit=3),
-            relations=RelationsOptions(),
-            semantic_roles=SemanticRolesOptions(limit=3),
-            sentiment=SentimentOptions(),
-        )
+        entities=EntitiesOptions(
+            emotion=True,
+            sentiment=True,
+            limit=5),
+        keywords=KeywordsOptions(
+            emotion=True,
+            sentiment=True,
+            limit=5),
+        metadata=MetadataOptions(),
+        emotion=EmotionOptions(),
+        categories=CategoriesOptions(),
+        concepts=ConceptsOptions(
+            limit=3),
+        relations=RelationsOptions(),
+        semantic_roles=SemanticRolesOptions(limit=3),
+        sentiment=SentimentOptions(),
+    )
 
     response = natural_language_understanding.analyze(
         features,
@@ -50,8 +51,7 @@ def analyze(username, password, url, html):
     for author in response.get('metadata', {}).get('authors', []):
         name = author['name']
         operations.append(UpdateOne({'name': name}, {'$set': {'name': name}}, upsert=True))
-    if operations:
-        Author._get_collection().bulk_write(operations, ordered=False)
+    save_authors(operations)
 
     operations = []
     for category in response.get('categories', []):
@@ -63,8 +63,7 @@ def analyze(username, password, url, html):
         '''
         label = category['label']
         operations.append(UpdateOne({"label": label}, {'$set': {"label": label}}, upsert=True))
-    if operations:
-        res = Category._get_collection().bulk_write(operations, ordered=False)
+    save_categories(operations)
 
     operations = []
     for entity in response.get('entities', []):
@@ -78,8 +77,7 @@ def analyze(username, password, url, html):
         if entity['text'] == entity['disambiguation'].get('name', ''):
             updates['url'] = entity['disambiguation']['dbpedia_resource']
         operations.append(UpdateOne({'name': entity['text']}, {'$set': updates}, upsert=True))
-    if operations:
-        res = Entity._get_collection().bulk_write(operations, ordered=False)
+    save_entities(operations)
 
     operations = []
     for concept in response.get('concepts', []):
@@ -88,8 +86,7 @@ def analyze(username, password, url, html):
             'text': concept['text']
         }
         operations.append(UpdateOne({'text': concept['text']}, {'$set': updates}, upsert=True))
-    if operations:
-        res = Concept._get_collection().bulk_write(operations, ordered=False)
+    save_concepts(operations)
 
     document = WatsonAnalytics.objects(url=url).first()
     if not document:
@@ -124,7 +121,7 @@ def analyze(username, password, url, html):
         )
         document.categories.append(categoryScore)
 
-    authors = [item['name'] for item in response.get('metadata', {}).get('authors',[])]
+    authors = [item['name'] for item in response.get('metadata', {}).get('authors', [])]
     document.authors = Author.objects(name__in=authors).only('id')
 
     document.keywords = []
@@ -143,7 +140,7 @@ def analyze(username, password, url, html):
         document.keywords.append(keyword)
 
     document.semantic_roles = []
-    for item in response.get('semantic_roles',[]):
+    for item in response.get('semantic_roles', []):
         sematicRole = SematicRole(
             action=item['action'],
             object=item.get('object'),
@@ -180,6 +177,30 @@ def analyze(username, password, url, html):
     document.save()
 
     return True
+
+
+@graceful_auto_reconnect
+def save_concepts(operations):
+    if operations:
+        res = Concept._get_collection().bulk_write(operations, ordered=False)
+
+
+@graceful_auto_reconnect
+def save_entities(operations):
+    if operations:
+        res = Entity._get_collection().bulk_write(operations, ordered=False)
+
+
+@graceful_auto_reconnect
+def save_categories(operations):
+    if operations:
+        res = Category._get_collection().bulk_write(operations, ordered=False)
+
+
+@graceful_auto_reconnect
+def save_authors(operations):
+    if operations:
+        Author._get_collection().bulk_write(operations, ordered=False)
 
 
 def find_attribute(lst, key, value, attribute_key):

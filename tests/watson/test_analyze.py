@@ -1,8 +1,13 @@
 import os
 
 from app.finance_news.models import FinanceNews
+from app.tasks import watson_analytics
 from app.watson.analyze import analyze
 from app.watson.models import WatsonAnalytics
+
+
+def test_watson_analytics(app):
+    watson_analytics()
 
 
 def test_natual_language_understanding(app):

@@ -7,7 +7,6 @@ from datetime import datetime
 
 import requests
 from dateutil import parser
-from flask import current_app
 from pymongo import UpdateOne
 
 from app.finance_news.models import Stock, SyncStatus

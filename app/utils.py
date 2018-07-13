@@ -52,3 +52,30 @@ def cache_api_response(backend, end_point, content):
             f = open(filepath, 'w')
             f.write(content)
             f.close()
+
+
+def graceful_auto_reconnect(mongo_op_func):
+    """Gracefully handle a reconnection event."""
+
+    import functools
+    import pymongo
+    import logging
+    import time
+    @functools.wraps(mongo_op_func)
+    def wrapper(*args, **kwargs):
+        for attempt in xrange(5):
+            try:
+                return mongo_op_func(*args, **kwargs)
+            except pymongo.errors.AutoReconnect as e:
+                wait_t = 0.5 * pow(2, attempt)  # exponential back off
+                logging.warning("PyMongo auto-reconnecting... %s. Waiting %.1f seconds.", str(e),
+                                wait_t)
+                time.sleep(wait_t)
+
+    return wrapper
+
+
+def chunks(l, n):
+    """Yield successive n-sized chunks from l."""
+    for i in xrange(0, len(l), n):
+        yield l[i:i + n]

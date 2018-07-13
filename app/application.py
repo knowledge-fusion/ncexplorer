@@ -3,7 +3,7 @@
 import flask_login
 from celery import Celery
 from flask import Flask, redirect, request, current_app, \
-    jsonify, make_response
+    jsonify, make_response, g
 from flask_login import UserMixin, LoginManager
 from raven.contrib.flask import Sentry
 from raven.handlers.logging import SentryHandler
@@ -101,16 +101,14 @@ def configure_extensions(app):
 
         user = User()
         user.id = username
-
         return user
 
     login_manager.login_view = "index"
 
     @app.route('/', methods=['GET', 'POST'])
     def index():
-        from flask_login import current_user
-        if current_user.is_authenticated:
-            return redirect('/admin/')
+
+        return redirect('/admin/')
 
         if request.method == 'POST':
             username = request.form.get('username')
@@ -118,6 +116,7 @@ def configure_extensions(app):
                 user = User()
                 user.id = username
                 flask_login.login_user(user)
+                g.user = user
                 redirect_url = request.args.get('next') or '/admin/'
                 return redirect(redirect_url)
         return render('index.html')
@@ -129,6 +128,7 @@ def configure_extensions(app):
     @app.route('/logout')
     def logout():
         flask_login.logout_user()
+        g.uesr = None
         return redirect('/')
 
 

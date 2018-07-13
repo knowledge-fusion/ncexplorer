@@ -28,3 +28,9 @@ def mock_news_api():
             responses.add(responses.GET,
                           url,
                           json=response)
+
+
+@pytest.fixture(scope='session')
+def intrinio_fetcher():
+    from app.finance_news.providers.intrinio_fetcher import IntrinioFetcher
+    return IntrinioFetcher()
