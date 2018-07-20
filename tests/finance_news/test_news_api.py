@@ -1,12 +1,11 @@
 import os
 
-import responses
-from mongoengine import Q
-
 from app.finance_news.fetch import fetch_symbol
-from app.finance_news.models import FinanceNews
-from app.finance_news.providers.newsriver import init
+from app.tasks import intrinio_company_news
 
+
+def test_intrinio_company_news(app):
+    intrinio_company_news()
 
 def test_query_news(mock_news_api):
     #responses.start()

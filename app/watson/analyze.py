@@ -12,13 +12,19 @@ from app.watson.models import Category, Entity, Concept, EntityScore, WatsonAnal
     CategoryScore, Keyword, Author, SematicRole, Relation
 
 
-def analyze(username, password, url, html):
+def analyze(username, password, url, html, content):
     natural_language_understanding = NaturalLanguageUnderstandingV1(
         username=username,
         password=password,
         version=os.getenv('WATSON_VERSION')
     )
-    query = {'html': html} if html else {'url': url}
+    query = None
+    if html:
+        query = {'html': html}
+    elif content:
+        query = {'text': content}
+    else:
+        query = {'url': url}
 
     features = Features(
         entities=EntitiesOptions(
@@ -29,7 +35,7 @@ def analyze(username, password, url, html):
             emotion=True,
             sentiment=True,
             limit=5),
-        metadata=MetadataOptions(),
+        metadata=MetadataOptions() if html else None,
         emotion=EmotionOptions(),
         categories=CategoriesOptions(),
         concepts=ConceptsOptions(
@@ -44,7 +50,8 @@ def analyze(username, password, url, html):
         return_analyzed_text=True,
         clean=True,
         limit_text_characters=10000,
-        **query
+        language='en',
+                 **query
     )
 
     operations = []
@@ -125,10 +132,11 @@ def analyze(username, password, url, html):
     document.authors = Author.objects(name__in=authors).only('id')
 
     document.keywords = []
+    #TODO key error sentiment
     for item in response.get('keywords', []):
         keyword = Keyword(
             text=item['text'],
-            sentiment_score=item['sentiment']['score'],
+            sentiment_score=item.get('sentiment', {}).get('score', None),
             score=item['relevance'],
         )
         if item.get('emotion', None):
@@ -163,16 +171,17 @@ def analyze(username, password, url, html):
 
         document.relations.append(relation)
 
-    emotion = response['emotion']['document']['emotion']
-    document.sadness = emotion['sadness']
-    document.joy = emotion['joy']
-    document.fear = emotion['fear']
-    document.disgust = emotion['disgust']
-    document.anger = emotion['anger']
-    document.sentiment_score = response['sentiment']['document']['score']
-    document.title = response.get('metadata', {}).get('title')
-    document.analyzed_text = response['analyzed_text']
-    document.publication_date = response.get('metadata', {}).get('publication_date')
+    if response.get('emotion', None):
+        emotion = response['emotion']['document']['emotion']
+        document.sadness = emotion['sadness']
+        document.joy = emotion['joy']
+        document.fear = emotion['fear']
+        document.disgust = emotion['disgust']
+        document.anger = emotion['anger']
+        document.sentiment_score = response['sentiment']['document']['score']
+        document.title = response.get('metadata', {}).get('title')
+        document.analyzed_text = response['analyzed_text']
+        document.publication_date = response.get('metadata', {}).get('publication_date')
 
     document.save()
 

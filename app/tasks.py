@@ -3,6 +3,7 @@
 import os
 
 from celery import group
+from mongoengine import Q
 
 from app.application import celery
 # pylint: disable=invalid-name,unused-argument
@@ -26,13 +27,13 @@ def test(self):
 
 
 @celery.task(bind=True, name="tasks.watson_analyze_webpage", ignore_result=False)
-def watson_analyze_webpage(self, username, password, url, html):
+def watson_analyze_webpage(self, username, password, url, html, content):
     from app.watson.analyze import analyze
 
     result = None
     try:
         print username
-        result = analyze(username, password, url=url, html=html)
+        result = analyze(username, password, url=url, html=html, content=content)
     except Exception as exc:
         logger.exception(exc)
         result = exc.message
@@ -46,12 +47,14 @@ def watson_analytics(self):
     for i in xrange(1, 11):
         credentials.append((os.getenv('WATSON_USERNAME%s' % i), os.getenv('WATSON_PASSWORD%s' % i)))
     tasks = []
-    queryset = FinanceNews.objects(url__nin=existing_urls, html__ne=None).only('url', 'html').limit(
-        30 * len(
-            credentials))
+    query = Q(url__nin=existing_urls) & (Q(html__ne=None) | Q(content__ne=None))
+    queryset = FinanceNews.objects(query).only('url', 'html', 'content').limit(
+        30 * len(credentials))
     for idx, item in enumerate(queryset):
         username, password = credentials[idx % len(credentials)]
-        tasks.append(watson_analyze_webpage.s(username, password, item.url, item.html))
+        if item.html or item.content:
+            tasks.append(watson_analyze_webpage.s(username, password, item.url, item.html,
+                                                  item.content))
     return group(tasks)()
 
 
@@ -93,9 +96,32 @@ def fetch_newsriver_update(self):
     return True
 
 
+@celery.task(bind=True, name="tasks.intrinio_company_news_fetch_symbol")
+def intrinio_company_news_fetch_symbol(self, symbol, username, password):
+    from app.finance_news.providers.intrinio_fetcher import IntrinioFetcher
+    intrinio_fetcher = IntrinioFetcher(username=username, password=password)
+    intrinio_fetcher.intrinio.client.cache_enabled = False
+    intrinio_fetcher.fetch_company_news(symbol)
+    return True
+
+
 @celery.task(bind=True, name="tasks.intrinio_company_news")
-def intrinio_company_news():
-    pass
+def intrinio_company_news(self):
+    queryset = SyncStatus.objects(
+        has_more=True, provider='intrinio', publisher='company_news', symbol__ne=None).distinct(
+        'symbol')
+    tasks = []
+    credentials = []
+    for i in xrange(1, 3):
+        credentials.append((os.getenv('INTRINIO_USERNAME%s' % i), os.getenv('INTRINIO_PASSWORD%s' %
+                                                                           i)))
+    for idx, symbol in enumerate(queryset):
+        if len(tasks) > 10:
+            break
+        username, password = credentials[idx % len(credentials)]
+
+        tasks.append(intrinio_company_news_fetch_symbol.s(symbol, username, password))
+    return group(tasks)()
 
 
 ###

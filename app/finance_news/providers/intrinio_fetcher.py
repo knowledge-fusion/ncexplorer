@@ -8,17 +8,27 @@ from pymongo import UpdateOne
 
 from app.finance_news.models import Stock, SyncStatus, FinanceNews
 from app.timeseries.models import EconomicIndex
-from app.utils import cache_api_response
+from app.utils import graceful_auto_reconnect
 
+
+@graceful_auto_reconnect
+def get_sync_status(symbol):
+    publisher = 'company_news'
+    status = SyncStatus.objects(publisher=publisher, symbol=symbol,
+                                provider='intrinio').first()
+    return status
 
 class IntrinioFetcher(object):
     name = 'intrinio'
 
-    def __init__(self):
+    def __init__(self, username=None, password=None):
         basepath = os.path.dirname(__file__)
         relativepath = '../../../tests/finance_news/data/intrinio'
         filepath = os.path.abspath(os.path.join(basepath, relativepath))
         intrinio.client.cache_directory = filepath
+        if username:
+            intrinio.client.username = username
+            intrinio.client.password = password
         self.intrinio = intrinio
 
     def fetch_companies(self):
@@ -67,17 +77,10 @@ class IntrinioFetcher(object):
             status.last_sync_operation = datetime.utcnow()
             status.save()
 
+
     def fetch_company_news(self, symbol):
-        publisher = 'company_news'
-        status = SyncStatus.objects(publisher=publisher, symbol=symbol,
-                                    provider=self.name).first()
-        if not status:
-            status = SyncStatus(
-                publisher=publisher,
-                provider=self.name,
-                symbol=symbol,
-                offset=1
-            )
+        status = get_sync_status(symbol)
+
         while True:
             page = intrinio.get_page('news', page_number=status.offset, identifier=symbol)
             if len(page) == 0 or status.offset == page.total_pages:

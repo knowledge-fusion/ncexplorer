@@ -20,17 +20,21 @@ class CeleryConfig(object):
     worker_log_color = False
     task_ignore_result = False
     beat_schedule = {
-        'watson_analytics': {
-            'task': 'tasks.watson_analytics',
-            'schedule': timedelta(minutes=1.3),
-        },
+        #'watson_analytics': {
+        #    'task': 'tasks.watson_analytics',
+        #    'schedule': timedelta(minutes=1.3),
+        #},
         #'stock_daily_timeseries': {
         #    'task': 'tasks.stock_daily_timeseries_data',
         #    'schedule': timedelta(minutes=1)
         #},
-        'newsriver_fetch_update': {
-            'task': 'tasks.fetch_newsriver_update',
-            'schedule': timedelta(minutes=16)
+        #'newsriver_fetch_update': {
+        #    'task': 'tasks.fetch_newsriver_update',
+        #    'schedule': timedelta(minutes=16)
+        #},
+        'intrinio-news': {
+            'task': 'tasks.intrinio_company_news',
+            'schedule': timedelta(minutes=5)
         }
     }
 
