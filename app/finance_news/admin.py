@@ -1,9 +1,9 @@
 from gettext import gettext
 
-from flask_admin.contrib.mongoengine import ModelView
 from flask_admin.contrib.mongoengine.filters import BaseMongoEngineFilter
 from flask_admin.contrib.mongoengine.tools import parse_like_term
 
+from app.admin.base import AuthModelView
 from app.finance_news.models import FinanceNews, Stock
 
 
@@ -39,7 +39,7 @@ def symbol_filter(filter_column):
     return FinanceSymbolFilter(filter_column, 'Symbol', options=options)
 
 
-class FinanceNewsView(ModelView):
+class FinanceNewsView(AuthModelView):
     column_display_pk = False
     column_list = ('symbol', 'title', 'timestamp', 'source')
 

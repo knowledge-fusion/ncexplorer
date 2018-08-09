@@ -82,43 +82,28 @@ def configure_extensions(app):
     login_manager = LoginManager()
     login_manager.init_app(app)
 
-    class User(UserMixin):
-        pass
-
     @login_manager.user_loader
     def user_loader(username):
         if username != current_app.config['ADMIN_USERNAME']:
             return None
-        user = User()
+        user = UserMixin()
         user.id = username
         return user
 
-    @login_manager.request_loader
-    def request_loader(req):
-        username = req.form.get('username')
-        if username != current_app.config['ADMIN_USERNAME']:
-            return None
-
-        user = User()
-        user.id = username
-        return user
-
-    login_manager.login_view = "index"
+    login_manager.login_view = "admin"
 
     @app.route('/', methods=['GET', 'POST'])
     def index():
 
-        return redirect('/admin/')
-
         if request.method == 'POST':
             username = request.form.get('username')
             if request.form.get('pw') == current_app.config['ADMIN_PASSWORD']:
-                user = User()
+                user = UserMixin()
                 user.id = username
                 flask_login.login_user(user)
-                g.user = user
                 redirect_url = request.args.get('next') or '/admin/'
                 return redirect(redirect_url)
+
         return render('index.html')
 
     @app.route('/admin')
@@ -128,7 +113,7 @@ def configure_extensions(app):
     @app.route('/logout')
     def logout():
         flask_login.logout_user()
-        g.uesr = None
+        g.user = None
         return redirect('/')
 
 

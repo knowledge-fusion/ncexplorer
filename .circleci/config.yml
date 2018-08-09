@@ -1,0 +1,78 @@
+defaults: &defaults
+  working_directory: ~/api
+  docker:
+    - image: sha1/flaskbase:latest
+      environment:
+        MONGO_HOST: ubuntu@localhost
+    - image: mongo:latest
+
+version: 2
+
+jobs:
+  build:
+    <<: *defaults
+    steps:
+      - checkout
+      - restore_cache:
+          key: api-{{ arch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements_dev.txt" }}
+      - run: |
+          pip install virtualenv
+          virtualenv ~/venv
+          . ~/venv/bin/activate
+          pip install -r requirements_dev.txt
+      - save_cache:
+          key: api-{{ arch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements_dev.txt" }}
+          paths:
+            - "~/.cache/pip"
+            - "~/venv"
+  lint:
+    <<: *defaults
+    steps:
+      - checkout
+      - restore_cache:
+          key: api-{{ arch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements_dev.txt" }}
+      - run: |
+          . ~/venv/bin/activate
+  bumpversion:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: |
+          if [ "${CIRCLE_BRANCH}" == "master" ]; then
+            pip install bumpversion
+            git config --global user.name "CircleCI"
+            git config --global user.email "bumpversion@circleci.com"
+            bumpversion minor
+            git push origin master --tags
+          fi
+
+workflows:
+  version: 2
+  build-test-and-deploy:
+    jobs:
+      - build
+      - lint:
+          requires:
+            - build
+      - test1:
+          requires:
+            - build
+      - test2:
+          requires:
+            - build
+      - bumpversion:
+          requires:
+            - lint
+            - test1
+            - test2
+          filters:
+            branches:
+              only: master
+      - zappa:
+          requires:
+            - lint
+            - test1
+            - test2
+          filters:
+            branches:
+              only: master

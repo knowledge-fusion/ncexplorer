@@ -20,10 +20,10 @@ class CeleryConfig(object):
     worker_log_color = False
     task_ignore_result = False
     beat_schedule = {
-        #'watson_analytics': {
-        #    'task': 'tasks.watson_analytics',
-        #    'schedule': timedelta(minutes=1.3),
-        #},
+        'watson_analytics': {
+            'task': 'tasks.watson_analytics',
+            'schedule': timedelta(minutes=1.3),
+        },
         #'stock_daily_timeseries': {
         #    'task': 'tasks.stock_daily_timeseries_data',
         #    'schedule': timedelta(minutes=1)
@@ -37,6 +37,7 @@ class CeleryConfig(object):
             'schedule': timedelta(minutes=5)
         }
     }
+    broker_transport_options = {'visibility_timeout': 60}  # 1 minute.
 
     CELERY_GEVENT_POOL_SIZE = 20
     #redis_max_connections = 5
@@ -44,7 +45,7 @@ class CeleryConfig(object):
 
 class DefaultConfig(CeleryConfig):
     DEBUG = True
-    PROJECT = 'natual-language-understanding'
+    PROJECT = 'natural-language-understanding'
     ENABLE_ADMIN_VIEW = True
     MONGODB_HOST = os.getenv('MONGODB_HOST')
     SENTRY_DSN = os.getenv('SENTRY_DSN')

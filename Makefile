@@ -27,6 +27,12 @@ release:
 	zappa update dev
 	curl https://finance-news.knowledge-fusion.science/reset_cache
 
+lint: ## check style with flake8
+	python -m pytest --pylint --pylint-error-types=EFCRW app
+
 build:
 	docker build -t knowledgefusion1/nlp:master .
 	docker push knowledgefusion1/nlp:master
+
+upgrade:
+	pip freeze --local | tee before_upgrade.txt | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 pip install -U

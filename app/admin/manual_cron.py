@@ -1,16 +1,16 @@
 import flask_admin as admin
-from flask import flash
+from flask import flash, make_response
 from flask import request
 from flask import url_for
 from flask_admin import AdminIndexView, expose
+from flask_login import login_required
+from jinja2 import TemplateNotFound
 
 
 class ManualCronView(AdminIndexView):
+    @login_required
     def is_accessible(self):
-        from flask_login import current_user
-        res = current_user.is_authenticated
-        return res
-
+        return True
 
     @expose('/', methods=['GET', 'POST'])
     def index(self):
@@ -29,5 +29,8 @@ class ManualCronView(AdminIndexView):
             result = celery.send_task(task, args=args)
             flash("sent task, name %s, args %s, id %s" % (task, args, result.id))
             task_url = url_for('task_status', task_id=result.id)
-
-        return self.render('admin/manual_cron.html', tasks=tasks, task_url=task_url)
+        try:
+            res = self.render('admin/manual_cron.html', tasks=tasks, task_url=task_url)
+        except TemplateNotFound as e:
+            res = super(ManualCronView, self).index()
+        return res
