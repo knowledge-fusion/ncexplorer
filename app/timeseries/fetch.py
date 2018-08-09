@@ -7,7 +7,7 @@ from app.timeseries.models import StockDailyTimeSeries
 from app.utils import graceful_auto_reconnect
 
 
-# pylint: disable=protected-access
+# pylint: disable=protected-access, unbalanced-tuple-unpacking, invalid-sequence-index
 
 @graceful_auto_reconnect
 def save_stock_data(operations):

@@ -6,6 +6,8 @@ from app.finance_news.models import FinanceNews, SyncStatus
 from app.finance_news.providers.newsriver import query_news_update
 
 
+# pylint: disable=protected-access
+
 def fetch_symbol(provider, publisher, token):
     status = SyncStatus.objects(provider=provider, publisher=publisher).first()
     if not status.timestamp:

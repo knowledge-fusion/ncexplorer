@@ -11,12 +11,14 @@ from app.timeseries.models import EconomicIndex
 from app.utils import graceful_auto_reconnect
 
 
+# pylint: disable=no-self-use
 @graceful_auto_reconnect
 def get_sync_status(symbol):
     publisher = 'company_news'
     status = SyncStatus.objects(publisher=publisher, symbol=symbol,
                                 provider='intrinio').first()
     return status
+
 
 class IntrinioFetcher(object):
     name = 'intrinio'
@@ -54,7 +56,7 @@ class IntrinioFetcher(object):
         while True:
             page = intrinio.get_page('indices', page_number=status.offset, type='economic')
 
-            if len(page) == 0 or status.offset == page.total_pages:
+            if not page or status.offset == page.total_pages:
                 status.has_more = False
                 status.save()
                 break
@@ -65,10 +67,11 @@ class IntrinioFetcher(object):
                     if row.get(key, None):
                         row[key] = parser.parse(row[key])
                 operations.append(UpdateOne(
-                    {'index_name': row['index_name'],
-                     'observation_start': row['observation_start'],
-                     'observation_end': row['observation_end']
-                     },
+                    {
+                        'index_name': row['index_name'],
+                        'observation_start': row['observation_start'],
+                        'observation_end': row['observation_end']
+                    },
                     {'$set': row},
                     upsert=True))
             EconomicIndex._get_collection().bulk_write(operations, ordered=False)
@@ -77,13 +80,12 @@ class IntrinioFetcher(object):
             status.last_sync_operation = datetime.utcnow()
             status.save()
 
-
     def fetch_company_news(self, symbol):
         status = get_sync_status(symbol)
 
         while True:
             page = intrinio.get_page('news', page_number=status.offset, identifier=symbol)
-            if len(page) == 0 or status.offset == page.total_pages:
+            if not page or status.offset == page.total_pages:
                 status.has_more = False
                 status.save()
                 break

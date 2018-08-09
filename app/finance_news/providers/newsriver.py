@@ -4,12 +4,15 @@ from datetime import datetime
 
 import requests
 from dateutil import parser
+from flask import current_app
 from pymongo import UpdateOne
 
 from app.finance_news.models import Stock, SyncStatus
 
 PROVIDER = 'newsriver'
 
+
+# pylint: disable=line-too-long
 
 def init():
     symbols = Stock.objects.distinct('symbol')
@@ -29,7 +32,6 @@ def init():
                 upsert=True))
     if operations:
         SyncStatus._get_collection().bulk_write(operations, ordered=False)
-
 
 
 def query_news_update(publisher, date, token):
@@ -82,7 +84,7 @@ def query_news_update(publisher, date, token):
 
     """
     query = "text: \"\" AND website.domainName: \"%s\" AND discoverDate:[%s TO *]" % (
-            publisher, date.strftime('%Y-%m-%d'))
+        publisher, date.strftime('%Y-%m-%d'))
     params = {
         "query": query,
         "sortBy": "discoverDate",
@@ -109,5 +111,7 @@ def query_news_update(publisher, date, token):
             }
             results.append(result)
     except Exception as e:
-        print response.content
+        current_app.logger.error(e, extra={
+            'content': response.content
+        })
     return results

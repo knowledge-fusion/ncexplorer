@@ -33,6 +33,7 @@ jobs:
           key: api-{{ arch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements_dev.txt" }}
       - run: |
           . ~/venv/bin/activate
+          make lint
   bumpversion:
     <<: *defaults
     steps:
@@ -54,25 +55,15 @@ workflows:
       - lint:
           requires:
             - build
-      - test1:
-          requires:
-            - build
-      - test2:
-          requires:
-            - build
       - bumpversion:
           requires:
             - lint
-            - test1
-            - test2
           filters:
             branches:
               only: master
       - zappa:
           requires:
             - lint
-            - test1
-            - test2
           filters:
             branches:
               only: master

@@ -13,7 +13,7 @@ class Stock(BaseDocument):
     craw_completed = BooleanField()
     oldest_timestamp = DateTimeField()
     latest_filing_date = DateTimeField()
-    cik = StringField()  # the Central Index Key issued by the SEC, which is the unique identifier all company filings are issued under
+    cik = StringField()  # the Central Index Key issued by the SEC
     lei = StringField()  # lei - the Legal Entity Identifier for the company
 
 

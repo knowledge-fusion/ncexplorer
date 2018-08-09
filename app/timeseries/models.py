@@ -2,7 +2,7 @@ from mongoengine import FloatField, StringField, DateTimeField, LongField, IntFi
 
 from app.common.mongoengine_base import BaseDocument
 
-
+# pylint: disable=line-too-long
 class StockData(BaseDocument):
     meta = {
         'abstract': True,

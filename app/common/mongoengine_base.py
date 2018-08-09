@@ -1,4 +1,3 @@
-
 from datetime import datetime
 
 from mongoengine import DateTimeField, Document
@@ -12,7 +11,7 @@ from mongoengine import DateTimeField, Document
 # http://docs.mongoengine.org/guide/defining-documents.html#document-inheritance
 # http://docs.mongoengine.org/guide/querying.html#custom-querysets
 
-
+# pylint: disable=unnecessary-lambda
 class BaseDocument(Document):
     meta = {
         'abstract': True,
