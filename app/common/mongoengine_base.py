@@ -1,8 +1,7 @@
 
 from datetime import datetime
 
-from flask_mongoengine import BaseQuerySet
-from mongoengine import DateTimeField, Document, StringField
+from mongoengine import DateTimeField, Document
 
 
 # This class wraps mongoengine base Document.

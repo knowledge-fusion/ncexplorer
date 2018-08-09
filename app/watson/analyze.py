@@ -1,17 +1,17 @@
 import os
 
-from flask import current_app
 from pymongo import UpdateOne
 from watson_developer_cloud import NaturalLanguageUnderstandingV1
 from watson_developer_cloud.natural_language_understanding_v1 import Features, EntitiesOptions, \
     KeywordsOptions, MetadataOptions, EmotionOptions, CategoriesOptions, ConceptsOptions, \
-    RelationsOptions, SemanticRolesOptions, SentimentOptions, AnalysisResults
+    RelationsOptions, SemanticRolesOptions, SentimentOptions
 
 from app.utils import graceful_auto_reconnect
-from app.watson.models import Category, Entity, Concept, EntityScore, WatsonAnalytics, ConceptScore, \
-    CategoryScore, Keyword, Author, SematicRole, Relation
+from app.watson.models import Category, Entity, Concept, EntityScore, WatsonAnalytics, \
+    ConceptScore, CategoryScore, Keyword, Author, SematicRole, Relation
 
 
+# pylint: disable=too-many-locals,invalid-name,too-many-branches,too-many-statements,protected-access
 def analyze(username, password, url, html, content):
     natural_language_understanding = NaturalLanguageUnderstandingV1(
         username=username,
@@ -51,7 +51,7 @@ def analyze(username, password, url, html, content):
         clean=True,
         limit_text_characters=10000,
         language='en',
-                 **query
+        **query
     )
 
     operations = []
@@ -62,12 +62,6 @@ def analyze(username, password, url, html, content):
 
     operations = []
     for category in response.get('categories', []):
-        '''
-        {
-            "score": 0.594296,
-            "label": "/technology and computing/software"
-        }
-        '''
         label = category['label']
         operations.append(UpdateOne({"label": label}, {'$set': {"label": label}}, upsert=True))
     save_categories(operations)
@@ -132,7 +126,6 @@ def analyze(username, password, url, html, content):
     document.authors = Author.objects(name__in=authors).only('id')
 
     document.keywords = []
-    #TODO key error sentiment
     for item in response.get('keywords', []):
         keyword = Keyword(
             text=item['text'],
@@ -191,19 +184,19 @@ def analyze(username, password, url, html, content):
 @graceful_auto_reconnect
 def save_concepts(operations):
     if operations:
-        res = Concept._get_collection().bulk_write(operations, ordered=False)
+        Concept._get_collection().bulk_write(operations, ordered=False)
 
 
 @graceful_auto_reconnect
 def save_entities(operations):
     if operations:
-        res = Entity._get_collection().bulk_write(operations, ordered=False)
+        Entity._get_collection().bulk_write(operations, ordered=False)
 
 
 @graceful_auto_reconnect
 def save_categories(operations):
     if operations:
-        res = Category._get_collection().bulk_write(operations, ordered=False)
+        Category._get_collection().bulk_write(operations, ordered=False)
 
 
 @graceful_auto_reconnect
@@ -216,3 +209,4 @@ def find_attribute(lst, key, value, attribute_key):
     for item in lst:
         if item[key] == value:
             return item[attribute_key]
+    return None

@@ -1,5 +1,4 @@
-import flask_admin as admin
-from flask import flash, make_response
+from flask import flash
 from flask import request
 from flask import url_for
 from flask_admin import AdminIndexView, expose
@@ -19,7 +18,6 @@ class ManualCronView(AdminIndexView):
         tasks = [x for x in tasks if x.startswith('tasks.')]
         tasks.sort()
         task_url = None
-        auth_token = None
         if request.method == 'POST':
 
             task = request.form['action']
@@ -31,6 +29,6 @@ class ManualCronView(AdminIndexView):
             task_url = url_for('task_status', task_id=result.id)
         try:
             res = self.render('admin/manual_cron.html', tasks=tasks, task_url=task_url)
-        except TemplateNotFound as e:
+        except TemplateNotFound:
             res = super(ManualCronView, self).index()
         return res

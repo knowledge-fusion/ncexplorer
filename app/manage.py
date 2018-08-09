@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from datetime import datetime, timedelta
 
 from flask import current_app
 from flask_script import Manager, Shell

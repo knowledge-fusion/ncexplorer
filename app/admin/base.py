@@ -1,4 +1,3 @@
-from flask import g
 from flask_admin import BaseView
 from flask_admin.contrib.mongoengine import ModelView
 from flask_login import login_required

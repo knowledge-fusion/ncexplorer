@@ -1,9 +1,9 @@
 import json
 import os
+from os.path import isfile, join
 
 import pytest
 import responses
-from os.path import isfile, join
 
 
 def mock_endpoints():

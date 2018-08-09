@@ -1,4 +1,4 @@
-from mongoengine import URLField, EmbeddedDocumentListField, EmbeddedDocument, FloatField, \
+from mongoengine import URLField, EmbeddedDocument, FloatField, \
     StringField, ListField, EmbeddedDocumentField, ReferenceField, IntField, DictField, \
     DateTimeField
 

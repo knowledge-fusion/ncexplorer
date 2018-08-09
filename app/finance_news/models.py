@@ -1,4 +1,4 @@
-from mongoengine import StringField, URLField, DateTimeField, IntField, BooleanField, LongField
+from mongoengine import StringField, URLField, DateTimeField, IntField, BooleanField
 
 from app.common.mongoengine_base import BaseDocument
 

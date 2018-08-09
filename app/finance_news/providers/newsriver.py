@@ -1,7 +1,4 @@
 import calendar
-import json
-import os
-import time
 import urllib
 from datetime import datetime
 
@@ -10,7 +7,6 @@ from dateutil import parser
 from pymongo import UpdateOne
 
 from app.finance_news.models import Stock, SyncStatus
-from app.utils import cache_api_response
 
 PROVIDER = 'newsriver'
 

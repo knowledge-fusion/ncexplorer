@@ -1,4 +1,4 @@
-from mongoengine import FloatField, StringField, DateTimeField, LongField, IntField, BooleanField
+from mongoengine import FloatField, StringField, DateTimeField, LongField, IntField
 
 from app.common.mongoengine_base import BaseDocument
 

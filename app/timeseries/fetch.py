@@ -7,6 +7,8 @@ from app.timeseries.models import StockDailyTimeSeries
 from app.utils import graceful_auto_reconnect
 
 
+# pylint: disable=protected-access
+
 @graceful_auto_reconnect
 def save_stock_data(operations):
     if operations:
@@ -16,8 +18,8 @@ def save_stock_data(operations):
 
 def fetch_daily_stock_data(symbol, outputsize):
     from alpha_vantage.timeseries import TimeSeries
-    ts = TimeSeries(key=os.getenv('ALPHA_VANTAGE'), output_format='json')
-    data, meta_data = ts.get_daily_adjusted(symbol=symbol, outputsize=outputsize)
+    time_series = TimeSeries(key=os.getenv('ALPHA_VANTAGE'), output_format='json')
+    data, meta_data = time_series.get_daily_adjusted(symbol=symbol, outputsize=outputsize)
     assert symbol == meta_data['2. Symbol']
     operations = []
     for date, item in data.iteritems():

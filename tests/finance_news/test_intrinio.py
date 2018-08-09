@@ -1,5 +1,3 @@
-import datetime
-
 from pymongo import UpdateOne
 
 from app.finance_news.models import SyncStatus, Stock

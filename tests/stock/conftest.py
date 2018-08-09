@@ -1,11 +1,8 @@
 import json
+import os
 
 import pytest
 import responses
-from os.path import isfile, join, dirname, realpath
-import os
-
-
 
 
 @pytest.fixture
