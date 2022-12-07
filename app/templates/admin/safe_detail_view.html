@@ -1,0 +1,76 @@
+<link rel="stylesheet" href="https://d33wubrfki0l68.cloudfront.net/bundles/7beaee83576a94b435a19d1e1edffb27d5ababb9.css">
+<script src="https://d33wubrfki0l68.cloudfront.net/bundles/238d44c40dabf70e33108156d5025642e5a8584f.js"></script>
+<script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.g6-3.1.0/build/g6.js"></script>
+<style>
+  .g6-tooltip {
+  padding: 10px 6px;
+  color: #444;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid #e2e2e2;
+  border-radius: 4px;
+}
+</style>
+{% extends 'admin/master.html' %}
+{% import 'admin/lib.html' as lib with context %}
+
+{% block body %}
+  {% block navlinks %}
+  <ul class="nav nav-tabs">
+    <li>
+        <a href="{{ return_url }}">{{ _gettext('List') }}</a>
+    </li>
+    {%- if admin_view.can_create -%}
+    <li>
+        <a href="{{ get_url('.create_view', url=return_url) }}">{{ _gettext('Create') }}</a>
+    </li>
+    {%- endif -%}
+    {%- if admin_view.can_edit -%}
+    <li>
+        <a href="{{ get_url('.edit_view', id=request.args.get('id'), url=return_url) }}">{{ _gettext('Edit') }}</a>
+    </li>
+    {%- endif -%}
+    <li class="active">
+        <a href="javascript:void(0)">{{ _gettext('Details') }}</a>
+    </li>
+  </ul>
+  {% endblock %}
+
+  {% block details_search %}
+    <div class="input-group fa_filter_container col-lg-6">
+      <span class="input-group-addon">{{ _gettext('Filter') }}</span>
+      <input id="fa_filter" type="text" class="form-control">
+    </div>
+  {% endblock %}
+
+  {% block details_table %}
+    <table class="table table-hover table-bordered searchable">
+      <tr><td><b>Id</b></td><td>{{ model['id'] }}</td></tr>
+    {% for c, name in details_columns %}
+      <tr>
+        <td>
+          <b>{{ name }}</b>
+        </td>
+        <td>
+        {{ get_value(model, c) | safe }}
+        </td>
+      </tr>
+    {% endfor %}
+      {%- if model|attr('extra_view') -%}
+      <tr>
+        <td>
+          <b>Details</b>
+        </td>
+        <td>
+        {{ model.extra_view() | safe }}
+        </td>
+      </tr>
+    {%- endif -%}
+    </table>
+  {% endblock %}
+{% endblock %}
+
+{% block tail %}
+  {{ super() }}
+
+<script src="{{ admin_static.url(filename='admin/js/details_filter.js', v='1.0.0') }}"></script>
+{% endblock %}

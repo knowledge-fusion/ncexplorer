@@ -1,0 +1,73 @@
+{% extends 'admin/master.html' %}
+{% import 'admin/lib.html' as lib with context %}
+
+{% block head %}
+{{ super() }}
+{{ lib.form_css() }}
+<!-- UIkit CSS -->
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-rc.6/css/uikit.min.css"/>
+
+<!-- UIkit JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-rc.6/js/uikit.min.js"></script>
+<script
+        src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-rc.6/js/uikit-icons.min.js"></script>
+{% endblock %}
+
+{% block body %}
+<h3>Run Cron Job</h3>
+<form action="" method="POST" class="uk-form-stacked">
+    <fieldset class="uk-fieldset">
+
+        <input type="text" name="args" value="" class='uk-input'
+               placeholder="Comma Separated Arguments">
+        {% for item in tasks %}
+        <div class="uk-margin">
+            <input class="uk-button uk-button-primary" type="submit" name="action"
+                   value="{{ item }}"/>
+        </div>
+        {% endfor %}
+    </fieldset>
+</form>
+{% if task_url %}
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script>
+    if (window.Notification && Notification.permission !== "granted") {
+
+        Notification.requestPermission().then(function(result) {
+            console.log(result);
+        });
+    }
+    function update_progress(idx) {
+            $.ajaxSetup({
+              headers : {
+                'Authorization' : '{{ auth_token }}',
+              }
+            });
+            // send GET request to status URL
+            $.getJSON("{{ task_url }}", function(data) {
+                // update UI
+               var mydiv = document.getElementsByClassName("alert")[0];
+               mydiv.innerHTML = "["+idx*2+" secs]"+JSON.stringify(data);
+
+                console.log(data);
+                if (data['ready'] == false) {
+                    setTimeout(function() {
+                        update_progress(idx+1);
+                    }, 2000);
+                } else {
+                    alert("task done!")
+                }
+            });
+        }
+    update_progress(0);
+
+</script>
+{% endif %}
+
+{% endblock %}
+
+{% block tail %}
+{{ super() }}
+{{ lib.form_js() }}
+{% endblock %}

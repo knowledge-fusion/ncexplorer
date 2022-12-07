@@ -1,0 +1,43 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+pytest = "*"
+pylint = "*"
+pylint-flask = "*"
+responses = "*"
+pytest-pylint = "*"
+appnope = "*"
+jupyterlab = "*"
+matplotlib = "*"
+mplcursors = "*"
+
+[packages]
+mongoengine = "*"
+flask-mongoengine = "*"
+newsapi-python = "*"
+sentry-sdk = {extras = ["flask"],version = "*"}
+python-dotenv = "*"
+Flask = "*"
+Flask-Admin = "*"
+Flask-Login = "*"
+alpha_vantage = "*"
+Flask-Caching = "*"
+SPARQLWrapper = "*"
+ipympl = "*"
+wikidata = "*"
+pymediawiki = "*"
+ipywidgets = "*"
+beautifulsoup4 = "*"
+flask-cors = "*"
+healthcheck = "*"
+spacy = "*"
+Flask-Compress = "*"
+redis = "*"
+timeout-decorator = "*"
+black = "==22.3.0"
+
+[requires]
+python_version = "3.9"

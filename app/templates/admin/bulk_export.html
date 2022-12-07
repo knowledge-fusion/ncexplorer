@@ -1,0 +1,9 @@
+{% extends 'admin/master.html' %} {% import 'admin/lib.html' as lib with context %}
+{% block head %} {{ super() }} {{ lib.form_css() }} {% endblock %}
+
+
+{% block body %}
+<h3>Export Data</h3>
+<p>export collection data to a csv file. This may take some time depending on the size of the
+    collection</p>
+{% call lib.form_tag(form) %} {{ lib.render_form_fields(form, form_opts=form_opts) }} {{ lib.render_form_buttons() }} {% endcall %} {% endblock %} {% block tail %} {{ super() }} {{ lib.form_js() }} {% endblock %}

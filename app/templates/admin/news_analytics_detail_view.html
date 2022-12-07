@@ -1,0 +1,273 @@
+<link rel="stylesheet" href="https://d33wubrfki0l68.cloudfront.net/bundles/7beaee83576a94b435a19d1e1edffb27d5ababb9.css">
+<script src="https://d33wubrfki0l68.cloudfront.net/bundles/238d44c40dabf70e33108156d5025642e5a8584f.js"></script>
+<style>
+  .g6-tooltip {
+  padding: 10px 6px;
+  color: #444;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid #e2e2e2;
+  border-radius: 4px;
+}
+</style>
+{% extends 'admin/master.html' %}
+{% import 'admin/lib.html' as lib with context %}
+
+{% block body %}
+  {% block navlinks %}
+  <ul class="nav nav-tabs">
+    <li>
+        <a href="{{ return_url }}">{{ _gettext('List') }}</a>
+    </li>
+    {%- if admin_view.can_create -%}
+    <li>
+        <a href="{{ get_url('.create_view', url=return_url) }}">{{ _gettext('Create') }}</a>
+    </li>
+    {%- endif -%}
+    {%- if admin_view.can_edit -%}
+    <li>
+        <a href="{{ get_url('.edit_view', id=request.args.get('id'), url=return_url) }}">{{ _gettext('Edit') }}</a>
+    </li>
+    {%- endif -%}
+    <li class="active">
+        <a href="javascript:void(0)">{{ _gettext('Details') }}</a>
+    </li>
+  </ul>
+  {% endblock %}
+
+  {% block details_search %}
+    <div class="input-group fa_filter_container col-lg-6">
+      <span class="input-group-addon">{{ _gettext('Filter') }}</span>
+      <input id="fa_filter" type="text" class="form-control">
+    </div>
+  {% endblock %}
+
+  {% block details_table %}
+    <table class="table table-hover table-bordered searchable">
+        <tr><td><b>Id</b></td><td>{{ model['id'] }}</td></tr>
+    {% for c, name in details_columns %}
+      <tr>
+        <td>
+          <b>{{ name }}</b>
+        </td>
+        <td>
+        {{ get_value(model, c) | safe }}
+        </td>
+      </tr>
+    {% endfor %}
+        <tr>
+          <td>
+            <b>Recognized Entities</b>
+          </td>
+          <td><table style="table-layout: fixed; width: 100%">
+              <tr>
+                  <th style="word-wrap: break-word; width: 70%">Concept</th>
+                  <th style="word-wrap: break-word; width: 10%">Specificity Score</th>
+                  <th style="word-wrap: break-word; width: 10%">Entity Count</th>
+                  <th style="word-wrap: break-word; width: 10%">KG connectivity score</th>
+                  <th style="word-wrap: break-word; width: 10%">Total relevance score</th>
+              </tr>
+
+              {% set entity_abstractions = model.entity_abstractions %}
+              {% set entity_stats = model.get_entity_stats() %}
+
+              {% for entity in entity_stats.keys() %}
+                    &nbsp;<tr><td colspan="4"><b>{{ entity }} {{ entity_stats[entity]['wikidata_id'] }} ({{ entity_stats[entity]['entity_type'] }}| {{ entity_stats[entity]['kg_entity_type'] }}) , tfidf: {{ "%.2f"|format(entity_stats[entity].get('entity_tfidf_score', 0)) }}</b></td></tr>
+                    {% set categories = entity_abstractions[entity] %}
+                    {% for category in categories %}
+                        <tr><td style="word-wrap: break-word; width: 70%">{{ category['category'] }} (expansion={{ category['expansion_routes'][0] }}{{ category['expansion_routes'] | length }})</td>
+                            <td style="background-color: rgba(153, 204, 255, {{ category.category_specificity_score }});">{{ category.category_specificity_score }} </td>
+                            <td>{{ category['kg_entity_count'] }}</td>
+                             {% if category['concept_relevance_score'] %}
+                            <td style="background-color: rgba(153, 204, 255, {{ category.concept_relevance_score}});"> {{"%.2f"|format(category['concept_relevance_score']) }} ({{ category['expansion_routes'] | length }})</td>
+                                {% if category['total_relevance_score'] %}
+                                <td style="background-color: rgba(153, 204, 255, {{ category.total_relevance_score}});">{{ "%.2f"|format(category['total_relevance_score']) }}</td>
+                                {% endif %}
+                            {% else %}
+
+
+                            <td colspan="5"></td>
+                            {% endif %}
+
+                        </tr>
+                    {% endfor %}
+              {% endfor %}
+              </table>
+          </td>
+        </tr>
+        <tr>
+            {% set pattern_map, similar_news = model.similar_news_by_abstraction() %}
+          <td>
+            <b> All patterns (count: {{ pattern_map|length }}) </b>
+          </td>
+          <td>
+              <div style="max-height:500px; overflow: scroll;">
+                  <table style="width: 100%; border-collapse: collapse;" >
+                      <tr>
+                          <th style="width:300px;overflow-wrap:break-word">Pattern</th>
+                          <th>Documents</th>
+                          <th>Categories</th>
+
+                          <th>KG connectivity</th>
+                          <th>Entity Diversity</th>
+                          <th>KG connectivity*Diversity</th>
+                          <th>Detail</th>
+
+                      </tr>
+                  {% for value in pattern_map.values() %}
+                      {% if value['category_count'] > 1 %}
+                      <tr style="border-bottom: 1pt solid grey;">
+                          <td style="width:30%; max-width:300px;overflow-wrap:break-word">{{ value['name'].replace(",", "<br>") | safe}}</td>
+                          <td> {{ value['document_count'] }} </td>
+                          <td> {{ value['category_count'] }} </td>
+
+                          <td> {{ value['kg_connectivity2'] }} </td>
+
+                          <td> {{ "%.2f"|format(value.get('diversity_score', 0)) }} </td>
+                          <td> {{ value['kg_connectivity2_diversity'] }} </td>
+                          <td> <a href="/admin/documentpattern/details/?id={{ value['id'] }}" target='_blank'>Detail</a></td>
+                      </tr>
+                      {% endif %}
+                  {% endfor %}
+                      </table>
+              </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <b>Similar news from abstractions. count: {{ similar_news|length }} </b>
+          </td>
+          <td>
+              <div style="height:500px; overflow: scroll;">
+              {% for item in similar_news[0:100] %}
+              {{ item['document'].entity_html | safe }} ({{ item['document'].version }})
+                 <a href="/admin/newsanalytics/details/?id={{ item['document'].id }}"  target="_blank"> View Detail </a>
+                    <table style="border: 1px solid #dddddd;border-collapse: collapse; width: 60%">
+                        <tr><th style="padding: 2px;">Abstraction</th><th style="padding: 2px;">Matched Entity</th><th style="padding: 2px;">Original Entity</th></tr>
+                  {% for abstraction, matches in item['matches'].items() %}
+
+
+                            {% for match in matches %}
+                        <tr style="border: 1px solid #dddddd;">
+                            <td style="padding: 2px;">{{ abstraction }}</td>
+                              <td style="padding: 2px;">{{ match['match'] }}</td>
+                              <td style="padding: 2px;">{{ match['original'] }}</td>
+                              </tr>
+                            {% endfor %}
+
+                  {% endfor %}
+                    </table>
+                  <div style="max-width: 800px; overflow-wrap: break-word;">
+                  {{ item['patterns'] }}
+                  </div>
+              {% endfor %}
+              </div>
+          </td>
+        </tr>
+        <tr>
+            {% set similar_news_by_entity = model.similar_news_by_entity() %}
+          <td>
+            <b>Similar news from entity. count: {{ similar_news_by_entity|length }} </b>
+          </td>
+          <td>
+              <div style="height:500px; overflow: scroll;">
+              {% for item in similar_news_by_entity %}
+              {{ item['document'].entity_html | safe }}
+                  {% for entity in item['entities'] %}
+                    <a href="https://dbpedia.org/page/{{ entity }}"  target="_blank">{{ entity | safe }} </a>,
+                  {% endfor %}
+                  <br/><a href="/admin/newsanalytics/details/?id={{ item['document'].id }}"  target="_blank"> View Detail </a>
+              {% endfor %}
+                  </div>
+          </td>
+        </tr>
+        <tr>
+            <td>
+              <b>Entity Abstraction Count</b>
+            </td>
+            <td id="entity-abstraction-count">
+            </td>
+        </tr>
+       <tr>
+            <td>
+              <b>Connected Entity Components</b>
+            </td>
+            <td id="connected-entity-components">
+            </td>
+        </tr>
+         <tr>
+            <td>
+              <b>Extra View </b>
+            </td>
+            <td>
+                {{ model.id }}
+                {{ model.extra_view() }}
+
+            </td>
+        </tr>
+    </table>
+  {% endblock %}
+{% endblock %}
+
+{% block tail %}
+  {{ super() }}
+  <script>
+    // 定义数据源
+
+
+    var entity_abstraction_count_data = {"nodes": [], "edges": []}
+    console.log(entity_abstraction_count_data);
+    const height2 = 1600;
+    console.log(height);
+    const entity_abstraction_count_graph = new G6.Graph({
+      container: 'entity-abstraction-count',
+      width,
+      height,
+      fitView: true,
+
+      layout: {
+        type: 'force',
+        clustering: true,
+        clusterEdgeDistance: 100,
+        clusterNodeSize: 10,
+        clusterFociStrength: 1.2,
+        nodeSpacing: 5,
+        preventOverlap: true,
+      },
+      defaultNode: {
+        size: 10,
+      },
+      modes: {
+        default: ['zoom-canvas', 'drag-canvas', 'drag-node'],
+      },
+    });
+
+    entity_abstraction_count_graph.data(entity_abstraction_count_data);
+    var colorArray = ['#FF6633', '#FFB399', '#FF33FF', '#FFFF99', '#00B3E6',
+                      '#E6B333', '#3366E6', '#999966', '#99FF99', '#B34D4D',
+                      '#80B300', '#809900', '#E6B3B3', '#6680B3', '#66991A',
+                      '#FF99E6', '#CCFF1A', '#FF1A66', '#E6331A', '#33FFCC',
+                      '#66994D', '#B366CC', '#4D8000', '#B33300', '#CC80CC',
+                      '#66664D', '#991AFF', '#E666FF', '#4DB3FF', '#1AB399',
+                      '#E666B3', '#33991A', '#CC9999', '#B3B31A', '#00E680',
+                      '#4D8066', '#809980', '#E6FF80', '#1AFF33', '#999933',
+                      '#FF3380', '#CCCC00', '#66E64D', '#4D80CC', '#9900B3',
+                      '#E64D66', '#4DB380', '#FF4D4D', '#99E6E6', '#6666FF'];
+    entity_abstraction_count_data.nodes.forEach((i) => {
+      //i.cluster = i.year;
+      i.style = Object.assign(i.style || {}, {
+        fill: colorArray[i.cluster],
+      });
+      i.label = i.label + ", count: " + i.count;
+    });
+    entity_abstraction_count_graph.render();
+    const container = document.getElementById('entity-abstraction-count');
+
+    if (typeof window !== 'undefined')
+      window.onresize = () => {
+        if (!graph || graph.get('destroyed')) return;
+        if (!container || !container.scrollWidth || !container.scrollHeight) return;
+        graph.changeSize(container.scrollWidth, container.scrollHeight);
+      };
+  </script>
+<script src="{{ admin_static.url(filename='admin/js/details_filter.js', v='1.0.0') }}"></script>
+{% endblock %}
