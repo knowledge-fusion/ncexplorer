@@ -1,10 +1,10 @@
-NCExplorer: Enabling Roll-up and Drill-down Operations in News Search Engines via Knowledge Graph Concepts
+Enabling Roll-up and Drill-down Operations in News Exploration via Knowledge Graphs
 ===
 
 
 Demo Site
 ----------
-https://ncexplorer.knowledge-fusion.science (best viewed in Chrome Browser)
+https://ncexplorer.knowledge-fusion.science
 
 Demo Youtube Video: https://youtu.be/NUdiUdoH0Gc
 
