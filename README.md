@@ -1,17 +1,22 @@
 Enabling Roll-up and Drill-down Operations in News Exploration via Knowledge Graphs
 ===
 
+Demo Video
+----------
+https://youtu.be/NUdiUdoH0Gc
 
 Demo Site
 ----------
 https://ncexplorer.knowledge-fusion.science
 
-Demo Youtube Video: https://youtu.be/NUdiUdoH0Gc
 
 
-News Data
+Dataset
 ----------
-https://knowledge-fusion-public-dataset.s3.ap-southeast-1.amazonaws.com/news.json.zip
+* News: https://knowledge-fusion-public-dataset.s3.ap-southeast-1.amazonaws.com/news.json.zip
+* News with Linked KG entities and categories: https://knowledge-fusion-public-dataset.s3.ap-southeast-1.amazonaws.com/news_entity.json.zip
+* Relevance evaluation task questions: https://knowledge-fusion-public-dataset.s3.ap-southeast-1.amazonaws.com/relevance_survey_question.json
+* Relevance evaluation task human and GPT response: https://knowledge-fusion-public-dataset.s3.ap-southeast-1.amazonaws.com/relevance_evaluation_response.json
 
 Components
 ----------
