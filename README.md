@@ -34,7 +34,7 @@ Other requirements
 --------------
 * NLP services to perform NER and NEL for text documents
 * A knowledge graph (KG) with ontology
-* A reachability index of the KG
+* (optional) A reachability index of the KG
 
 
 Installations
