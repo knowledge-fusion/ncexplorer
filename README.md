@@ -13,10 +13,7 @@ https://ncexplorer.knowledge-fusion.science
 
 Dataset
 ----------
-* News: https://knowledge-fusion-public-dataset.s3.ap-southeast-1.amazonaws.com/news.json.zip
-* News with Linked KG entities and categories: https://knowledge-fusion-public-dataset.s3.ap-southeast-1.amazonaws.com/news_entity.json.zip
-* Relevance evaluation task questions: https://knowledge-fusion-public-dataset.s3.ap-southeast-1.amazonaws.com/relevance_survey_question.json
-* Relevance evaluation task human and GPT response: https://knowledge-fusion-public-dataset.s3.ap-southeast-1.amazonaws.com/relevance_evaluation_response.json
+https://zenodo.org/record/8026340
 
 Components
 ----------
