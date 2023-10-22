@@ -35,3 +35,6 @@ lint: ## check style with flake8
 
 migration:
 	export FLASK_APP=app/application.py && pipenv run flask data_migration
+
+push:
+	git push -u github
