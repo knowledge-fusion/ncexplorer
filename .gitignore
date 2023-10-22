@@ -28,7 +28,6 @@ wheels/
 MANIFEST
 
 .DS_Store
-node_modules
 /dist
 
 

@@ -7,7 +7,7 @@ case $1 in
 	  pipenv run python app/application.py
 		;;
 	?)
-		echo "run app components: [web|worker|beat]. Or any other shell command."
+		echo "run app components: [web]. Or any other shell command."
 		;;
 	*)
 		exec "$@"
