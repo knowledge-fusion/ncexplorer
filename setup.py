@@ -17,7 +17,7 @@ setup(
     name="natural-language-understanding",
     version=__version__,
     long_description=readme,
-    author="knowledgefusion",
+    author="ncexplorer",
     author_email="admin@knowledge-fusion.science",
     packages=[
         "app",
