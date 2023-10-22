@@ -67,7 +67,6 @@ def get_kg_paths_sampling(
     reachable_candidates = []
     while len(paths) <= path_length:
         if along_reachable_path:
-
             reachable_candidates = set()
             for candidate in ground_truth_paths:
                 if candidate[: len(paths)] == paths:
@@ -107,7 +106,6 @@ def sample_path_until_n_success():
         # print(ground_truth_paths)
         record.reachable_graph_probabilities = []
         while len(record.reachable_graph_probabilities) < 100:
-
             res = get_kg_paths_sampling(
                 concept_entity=record.concept_entity,
                 instance_entities=[record.instance_entity],

@@ -50,7 +50,6 @@ class DBPediaEntityLinkedAttribute(BaseDocument):
 
     @classmethod
     def calculate_uniqueness_score(cls):
-
         """
         pipeline = [
             # {"$match": {"predicate": "award"}},

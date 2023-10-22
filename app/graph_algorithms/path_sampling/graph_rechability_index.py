@@ -26,7 +26,6 @@ def _add_edge(G, from_node, to_node, total_length, target_node, order_in_path):
 
 @timeout_decorator.timeout(60)
 def _build_reachable_tree(concept_entity, context_entities):
-
     import networkx as nx
     from networkx.readwrite import json_graph
 
@@ -112,7 +111,6 @@ def _build_reachable_tree(concept_entity, context_entities):
 
             if two_hop_node in reachable_two_hop_nodes.keys():
                 for three_hop_node in reachable_two_hop_nodes[two_hop_node]:
-
                     _add_edge(
                         G,
                         to_node=three_hop_node,
@@ -154,7 +152,6 @@ def _generate_ground_truth_from_graph(directed_graph, concept_entity, context_en
     one_hop_path_prefixes = []
     for one_hop_neighbor in directed_graph.neighbors(concept_entity):
         if one_hop_neighbor not in context_entities:
-
             one_hop_path_prefixes.append([concept_entity, one_hop_neighbor])
 
     two_hop_path_prefixes = []
@@ -177,7 +174,6 @@ def _generate_ground_truth_from_graph(directed_graph, concept_entity, context_en
             if paths_with_higher_order:
                 candidate_neighbors.add(neighbor)
         for three_hop_neighbor in candidate_neighbors:
-
             if three_hop_neighbor in context_entities:
                 results[two_hop_prefix[1]][three_hop_neighbor]["2"].append(
                     two_hop_prefix + [three_hop_neighbor]
@@ -190,7 +186,7 @@ def _generate_ground_truth_from_graph(directed_graph, concept_entity, context_en
     all_paths = []
     total_path_num = 0
     scores = []
-    context_individual_scores = defaultdict(lambda: 0)
+    context_individual_scores = defaultdict(int)
     for context_entity in context_entities:
         for connected_concept_entity in results.keys():
             paths_info = results[connected_concept_entity][context_entity]
@@ -320,7 +316,6 @@ def calculate_ground_truth_and_estimated_path_count(evaluation_object=None):
         estimated_score_no_index = []
         running_errors_no_index = []
         for idx in range(len(estimates_no_index)):
-
             average = np.average(estimates_no_index[: idx + 1])
             estimated_score_no_index.append(average)
             normalized_average = 1 - 1 / (1 + average)
@@ -414,7 +409,6 @@ def build_reachable_tree_task(skip=0):
 
 @timeout_decorator.timeout(30)
 def targeted_random_walk_on_connected_tree(G, evaluation_object):
-
     estimates = {"2": [], "3": [], "4": []}
     for context_entity in evaluation_object.context_entities:
         count = 0
@@ -500,7 +494,6 @@ def collective_random_walk_on_connected_tree(evaluation_object):
 
 
 def random_walk_on_connected_tree(G, concept_entity, context_entities):
-
     estimates = {"2": [], "3": [], "4": []}
     count = 0
     while count < 50:
@@ -553,7 +546,6 @@ def random_walk_on_connected_tree(G, concept_entity, context_entities):
 def random_walk_on_connected_tree_no_reachability_index(
     G, concept_entity, context_entities
 ):
-
     estimates = {"2": [], "3": [], "4": []}
     count = 0
     while count < 600:

@@ -126,7 +126,6 @@ class SubdomainRecommendationEvaluation(BaseDocument):
             self.top_coverage_specificity_subdomain,
             self.top_coverage_specificity_diversity_subdomain,
         ]:
-
             record = [
                 item
                 for item in self.all_subdomain_records

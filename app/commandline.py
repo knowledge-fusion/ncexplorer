@@ -40,7 +40,6 @@ def data_migration():
     from flask import current_app
 
     try:
-
         from pymongo.errors import AutoReconnect
 
         try:
@@ -83,7 +82,6 @@ def data_migration():
             current_app.logger.error(e, exc_info=True)
 
     except Exception as e:
-
         current_app.logger.error(e, exc_info=True)
         res.append("%s" % e)
     from flask import current_app

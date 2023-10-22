@@ -17,7 +17,6 @@ services = Blueprint("pattern_explore", __name__)
 
 @cache.memoize(timeout=60)
 def trending_patterns():
-
     names = DocumentPatternEvaluationQuestion.objects.distinct("name")
     res = [name.split(",") for name in names]
     print(res)
@@ -163,7 +162,6 @@ def related_term(patterns):
             .no_dereference()
         )
     else:
-
         queryset = (
             DocumentEntityCategory.objects(
                 news_analytics__in=document_ids,

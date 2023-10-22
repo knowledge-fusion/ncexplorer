@@ -19,7 +19,6 @@ def test_calculate_analytics_document_pattern_score():
                 news.processing_state
                 == NewsAnalyticsProcessingState.DOCUMENT_ENTITY_SCORE_CALCULATED.value
             ):
-
                 _document_entity_abstraction_score(news)
                 news.processing_state = (
                     NewsAnalyticsProcessingState.DOCUMENT_ENTITY_ABSTRACTION_SCORE_CALCULATED.value

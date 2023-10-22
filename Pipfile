@@ -37,7 +37,6 @@ spacy = "*"
 Flask-Compress = "*"
 redis = "*"
 timeout-decorator = "*"
-black = "==22.3.0"
 
 [requires]
 python_version = "3.9"

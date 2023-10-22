@@ -41,7 +41,6 @@ class ManualCronView(AdminIndexView):
 
         task_url = None
         if request.method == "POST":
-
             task = request.form["action"]
             args = []
             if request.form["args"]:

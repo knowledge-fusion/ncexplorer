@@ -148,7 +148,6 @@ def configure_extensions(app):
 
     @app.route("/", methods=["GET", "POST"])
     def index():
-
         if request.method == "POST":
             username = request.form.get("username")
             if request.form.get("pw") == current_app.config["ADMIN_PASSWORD"]:

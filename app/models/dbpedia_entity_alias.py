@@ -11,7 +11,6 @@ from app.common.mongoengine_base import BaseDocument
 
 
 class DBPediaEntityAlias(BaseDocument):
-
     meta = {
         "indexes": [
             "subject",
@@ -145,7 +144,6 @@ class DBPediaEntityAlias(BaseDocument):
             queryset = cls.objects(infobox_template=record.infobox_template)
             derived_type = record.infobox_template
             if queryset.count() < 1000:
-
                 template_type_pipeline = [
                     {
                         "$match": {

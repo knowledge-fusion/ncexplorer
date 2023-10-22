@@ -12,7 +12,6 @@ from app.models.news_analytics import NewsAnalytics
 
 
 class DocumentEntityCategory(BaseDocument):
-
     meta = {
         "indexes": [
             "entity",

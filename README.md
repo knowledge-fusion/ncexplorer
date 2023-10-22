@@ -1,16 +1,6 @@
 Enabling Roll-up and Drill-down Operations in News Exploration via Knowledge Graphs
 ===
 
-Demo Video
-----------
-https://youtu.be/NUdiUdoH0Gc
-
-Demo Site
-----------
-https://ncexplorer.knowledge-fusion.science
-
-
-
 Dataset
 ----------
 https://zenodo.org/record/8026340

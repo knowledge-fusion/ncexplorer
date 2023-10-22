@@ -106,7 +106,6 @@ def test_search_news_by_abstraction():
 
 
 def test_pattern_matching():
-
     from bson import ObjectId
 
     matching_news = [

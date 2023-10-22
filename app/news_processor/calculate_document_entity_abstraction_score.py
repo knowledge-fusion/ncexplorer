@@ -139,7 +139,6 @@ def calculate_three_hop_concept_relevance_scores(
             object__in=one_hop_neighbors_subset
         )
         for item in DBPediaEntityWikilink.objects(query).limit(sample_count):
-
             last_node, second_node = (
                 (item.subject, item.object)
                 if item.object in one_hop_neighbors_subset

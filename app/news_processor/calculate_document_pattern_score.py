@@ -454,7 +454,6 @@ def task_refresh_pattern_and_subtopics(document_patterns):
     )
 
     for document_pattern in document_patterns:
-
         if (
             document_pattern.processing_state
             == DocumentPatternProcessingState.DOCUMENTS_OUTDATED.value
